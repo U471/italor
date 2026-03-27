@@ -41,4 +41,9 @@ describe('App', () => {
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/');
   });
+
+  it('renders the register page at /register', () => {
+    renderWithRouter(<App />, { initialEntries: ['/register'] });
+    expect(screen.getByRole('heading', { name: /create your account/i })).toBeInTheDocument();
+  });
 });

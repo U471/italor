@@ -6,6 +6,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
 const healthRouter = require('./routes/health');
+const authRouter = require('./routes/auth.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFoundHandler } = require('./middleware/notFoundHandler');
 
@@ -15,10 +16,6 @@ const app = express();
 app.use(helmet());
 
 // ── CORS ────────────────────────────────────────────────────────────────────
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:5173', 'http://localhost:3000'];
-
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -26,6 +23,9 @@ app.use(
       if (!origin) {
         return callback(null, true);
       }
+      const allowedOrigins = process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+        : ['http://localhost:5173', 'http://localhost:3000'];
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -59,6 +59,7 @@ app.use(globalLimiter);
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/v1/health', healthRouter);
+app.use('/api/v1/auth', authRouter);
 
 // ── 404 + Error handlers ─────────────────────────────────────────────────────
 app.use(notFoundHandler);

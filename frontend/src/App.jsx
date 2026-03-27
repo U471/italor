@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import RegisterPage from './pages/RegisterPage';
 
 /**
  * Root application component.
@@ -9,6 +10,7 @@ function App() {
     <div className="min-h-screen bg-white">
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>

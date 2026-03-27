@@ -2,15 +2,24 @@
 
 const { Router } = require('express');
 const { authenticate } = require('../middleware/auth.middleware');
-const { getMe } = require('../controllers/user.controller');
+const { uploadAvatar } = require('../middleware/upload.middleware');
+const { getMe, updateMe, updatePassword, updateAvatarHandler } = require('../controllers/user.controller');
 
 const router = Router();
 
-/**
- * GET /api/v1/user/me
- * Returns the authenticated user's profile data.
- * Requires a valid Bearer token in the Authorization header.
- */
-router.get('/me', authenticate, getMe);
+// All /api/v1/user routes require authentication
+router.use(authenticate);
+
+/** GET  /api/v1/user/me — Get full profile */
+router.get('/me', getMe);
+
+/** PUT  /api/v1/user/me — Update firstName, lastName, phone */
+router.put('/me', updateMe);
+
+/** PUT  /api/v1/user/me/password — Change password */
+router.put('/me/password', updatePassword);
+
+/** PUT  /api/v1/user/me/avatar — Upload new avatar */
+router.put('/me/avatar', uploadAvatar.single('avatar'), updateAvatarHandler);
 
 module.exports = router;

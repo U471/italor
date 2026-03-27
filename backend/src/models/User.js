@@ -52,6 +52,21 @@ const userSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
+    phone: {
+      type: String,
+      trim: true,
+      maxlength: [20, 'Phone number cannot exceed 20 characters'],
+      default: null,
+    },
+    avatarUrl: {
+      type: String,
+      default: null,
+    },
+    avatarPublicId: {
+      type: String,
+      select: false,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -67,6 +82,7 @@ userSchema.methods.toJSON = function () {
   delete obj.refreshTokenHash;
   delete obj.resetPasswordToken;
   delete obj.resetPasswordExpiry;
+  delete obj.avatarPublicId;
   return obj;
 };
 

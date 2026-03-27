@@ -19,7 +19,7 @@ const INITIAL_ERRORS = {
  * Displays a login form with email + password fields.
  * - Loading state: spinner on button while API call is in flight.
  * - Error state: red banner for invalid credentials.
- * - Success state: redirects to /.
+ * - Success state: redirects to /dashboard.
  * - "Don't have an account? Register" link.
  *
  * Design matches RegisterForm: same card style, button style, input style.
@@ -82,7 +82,7 @@ function LoginForm({ onSuccess }) {
 
       if (onSuccess) onSuccess(result);
 
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setApiError(err.message || 'Login failed. Please try again.');
     } finally {

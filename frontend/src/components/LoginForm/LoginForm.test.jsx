@@ -131,7 +131,7 @@ describe('LoginForm', () => {
     });
   });
 
-  it('navigates to / on successful login', async () => {
+  it('navigates to /dashboard on successful login', async () => {
     const user = userEvent.setup();
     const onSuccess = jest.fn();
 
@@ -147,7 +147,7 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await screen.findByRole('button'); // wait for async settle
-    expect(mockNavigate).toHaveBeenCalledWith('/');
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     expect(onSuccess).toHaveBeenCalledTimes(1);
   });
 

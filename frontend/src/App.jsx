@@ -1,18 +1,35 @@
 import { Routes, Route } from 'react-router-dom';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import useAuth from './hooks/useAuth';
 
 /**
  * Root application component.
  * Routes are added here as features are built sprint by sprint.
+ *
+ * useAuth hook is called at the root level so that session restore
+ * (silent refresh) happens on every page load, preventing a flash of
+ * unauthenticated content when the user has a valid refresh token cookie.
  */
 function App() {
+  const { isLoading } = useAuth();
+
   return (
     <div className="min-h-screen bg-white">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>

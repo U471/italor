@@ -1,40 +1,25 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../../services/api';
-import useAuthStore from '../../store/authStore';
+import { forgotPassword } from '../../services/api';
 
-const INITIAL_FORM = {
-  email: '',
-  password: '',
-};
-
-const INITIAL_ERRORS = {
-  email: '',
-  password: '',
-};
+const INITIAL_FORM = { email: '' };
+const INITIAL_ERRORS = { email: '' };
 
 /**
- * LoginForm component.
+ * ForgotPasswordForm component.
  *
- * Displays a login form with email + password fields.
- * - Loading state: spinner on button while API call is in flight.
- * - Error state: red banner for invalid credentials.
- * - Success state: redirects to /dashboard.
- * - "Don't have an account? Register" link.
- *
- * Design matches RegisterForm: same card style, button style, input style.
+ * Displays a single email field. On submit, calls the forgot-password API.
+ * - Always shows a generic success message (server never reveals if email exists).
+ * - Same card design patterns as LoginForm / RegisterForm.
  *
  * @param {object} props
  * @param {function} [props.onSuccess] - Called with the API response on success (for testing).
  */
-function LoginForm({ onSuccess }) {
+function ForgotPasswordForm({ onSuccess }) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState(INITIAL_ERRORS);
   const [apiError, setApiError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -55,11 +40,6 @@ function LoginForm({ onSuccess }) {
       valid = false;
     }
 
-    if (!form.password) {
-      newErrors.password = 'Password is required';
-      valid = false;
-    }
-
     setErrors(newErrors);
     return valid;
   }
@@ -72,26 +52,42 @@ function LoginForm({ onSuccess }) {
 
     setIsLoading(true);
     try {
-      const result = await loginUser({
-        email: form.email.trim(),
-        password: form.password,
-      });
-
-      // Store access token and user in Zustand (in-memory only)
-      setAuth({ user: result.user, accessToken: result.accessToken });
-
+      const result = await forgotPassword({ email: form.email.trim() });
+      setIsSuccess(true);
       if (onSuccess) onSuccess(result);
-
-      navigate('/dashboard');
     } catch (err) {
-      setApiError(err.message || 'Login failed. Please try again.');
+      setApiError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
   }
 
+  // ── Success state ───────────────────────────────────────────────────────────
+  if (isSuccess) {
+    return (
+      <div role="status" aria-live="polite" className="text-center p-8">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg
+            className="w-8 h-8 text-green-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
+        <p className="text-gray-600">
+          If that email exists in our system, we&apos;ve sent a reset link. Check your inbox (and spam folder).
+        </p>
+      </div>
+    );
+  }
+
+  // ── Form ─────────────────────────────────────────────────────────────────────
   return (
-    <form onSubmit={handleSubmit} noValidate aria-label="Login form">
+    <form onSubmit={handleSubmit} noValidate aria-label="Forgot password form">
       {/* API Error Banner */}
       {apiError && (
         <div
@@ -103,7 +99,7 @@ function LoginForm({ onSuccess }) {
       )}
 
       {/* Email */}
-      <div className="mb-4">
+      <div className="mb-6">
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
           Email address
         </label>
@@ -125,33 +121,6 @@ function LoginForm({ onSuccess }) {
         {errors.email && (
           <p id="email-error" role="alert" className="mt-1 text-xs text-red-600">
             {errors.email}
-          </p>
-        )}
-      </div>
-
-      {/* Password */}
-      <div className="mb-6">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={form.password}
-          onChange={handleChange}
-          disabled={isLoading}
-          aria-invalid={!!errors.password}
-          aria-describedby={errors.password ? 'password-error' : undefined}
-          className={`w-full px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-colors ${
-            errors.password ? 'border-red-500' : 'border-gray-300'
-          } disabled:opacity-50`}
-          placeholder="Your password"
-        />
-        {errors.password && (
-          <p id="password-error" role="alert" className="mt-1 text-xs text-red-600">
-            {errors.password}
           </p>
         )}
       </div>
@@ -185,27 +154,14 @@ function LoginForm({ onSuccess }) {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            Signing in…
+            Sending…
           </span>
         ) : (
-          'Sign in'
+          'Send reset link'
         )}
       </button>
-
-      {/* Forgot password + Register links */}
-      <div className="mt-6 flex flex-col items-center gap-2 text-sm text-gray-500">
-        <Link to="/forgot-password" className="font-medium text-gray-900 hover:underline">
-          Forgot password?
-        </Link>
-        <p>
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="font-medium text-gray-900 hover:underline">
-            Register
-          </Link>
-        </p>
-      </div>
     </form>
   );
 }
 
-export default LoginForm;
+export default ForgotPasswordForm;

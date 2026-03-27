@@ -39,18 +39,24 @@ const userSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
+    refreshTokenHash: {
+      type: String,
+      select: false,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Never return passwordHash in JSON responses
+// Never return sensitive fields in JSON responses
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.passwordHash;
   delete obj.verificationToken;
   delete obj.verificationTokenExpiry;
+  delete obj.refreshTokenHash;
   return obj;
 };
 

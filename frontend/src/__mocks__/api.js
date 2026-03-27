@@ -11,4 +11,7 @@ const api = {
 };
 
 export const registerUser = jest.fn();
+export const loginUser = jest.fn();
+export const refreshToken = jest.fn();
+export const logout = jest.fn();
 export default api;

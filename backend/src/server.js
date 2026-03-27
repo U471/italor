@@ -8,13 +8,13 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/italor';
 async function start() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('[server] MongoDB connected');
+    process.stdout.write(JSON.stringify({ level: 'info', message: 'MongoDB connected', timestamp: new Date().toISOString() }) + '\n');
 
     app.listen(PORT, () => {
-      console.log(`[server] Listening on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
+      process.stdout.write(JSON.stringify({ level: 'info', message: `Listening on port ${PORT}`, env: process.env.NODE_ENV || 'development', timestamp: new Date().toISOString() }) + '\n');
     });
   } catch (err) {
-    console.error('[server] Failed to start:', err);
+    process.stderr.write(JSON.stringify({ level: 'error', message: 'Failed to start', error: err.message, timestamp: new Date().toISOString() }) + '\n');
     process.exit(1);
   }
 }

@@ -31,7 +31,7 @@ async function register(req, res) {
       return res.status(409).json({ error: err.message });
     }
 
-    console.error('[auth.controller] register error:', err);
+    process.stdout.write(JSON.stringify({ level: 'error', context: 'auth.controller', message: err.message, timestamp: new Date().toISOString() }) + '\n');
     return res.status(500).json({ error: 'Internal server error. Please try again later.' });
   }
 }

@@ -60,7 +60,7 @@ async function registerUser({ firstName, lastName, email, password }) {
     });
   } catch (emailErr) {
     // Log and continue — user is already saved; they can request a resend later
-    console.error('[auth.service] Failed to send verification email:', emailErr.message);
+    process.stdout.write(JSON.stringify({ level: 'warn', context: 'auth.service', message: 'Failed to send verification email', error: emailErr.message, timestamp: new Date().toISOString() }) + '\n');
   }
 
   return user;

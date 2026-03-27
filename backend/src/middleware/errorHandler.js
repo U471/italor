@@ -7,7 +7,7 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
   const message = err.message || 'Internal Server Error';
 
   if (process.env.NODE_ENV !== 'test') {
-    console.error(`[ErrorHandler] ${statusCode} — ${message}`, err.stack);
+    process.stdout.write(JSON.stringify({ level: 'error', context: 'errorHandler', status: statusCode, message, stack: err.stack, timestamp: new Date().toISOString() }) + '\n');
   }
 
   return res.status(statusCode).json({

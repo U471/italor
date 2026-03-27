@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 
 const healthRouter = require('./routes/health');
 const authRouter = require('./routes/auth.routes');
+const passwordRouter = require('./routes/password.routes');
 const userRouter = require('./routes/user.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFoundHandler } = require('./middleware/notFoundHandler');
@@ -63,6 +64,7 @@ app.use(globalLimiter);
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/v1/health', healthRouter);
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/auth', passwordRouter);
 app.use('/api/v1/user', userRouter);
 
 // ── 404 + Error handlers ─────────────────────────────────────────────────────

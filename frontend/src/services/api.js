@@ -115,4 +115,51 @@ export async function resetPassword(payload) {
   return data;
 }
 
+// ── User profile endpoints ────────────────────────────────────────────────────
+
+/**
+ * Returns the authenticated user's full profile.
+ *
+ * @returns {Promise<{ user: object }>}
+ */
+export async function getMe() {
+  const { data } = await api.get('/api/v1/user/me');
+  return data;
+}
+
+/**
+ * Updates the authenticated user's profile (firstName, lastName, phone).
+ *
+ * @param {{ firstName?: string, lastName?: string, phone?: string }} payload
+ * @returns {Promise<{ message: string, user: object }>}
+ */
+export async function updateMe(payload) {
+  const { data } = await api.put('/api/v1/user/me', payload);
+  return data;
+}
+
+/**
+ * Changes the authenticated user's password.
+ *
+ * @param {{ currentPassword: string, newPassword: string }} payload
+ * @returns {Promise<{ message: string }>}
+ */
+export async function updatePassword(payload) {
+  const { data } = await api.put('/api/v1/user/me/password', payload);
+  return data;
+}
+
+/**
+ * Uploads a new avatar image.
+ *
+ * @param {FormData} formData  Must include a file field named "avatar".
+ * @returns {Promise<{ message: string, avatarUrl: string }>}
+ */
+export async function updateAvatar(formData) {
+  const { data } = await api.put('/api/v1/user/me/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
 export default api;

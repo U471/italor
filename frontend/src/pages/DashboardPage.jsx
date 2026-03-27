@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { logout as logoutApi } from '../services/api';
 
@@ -47,7 +47,13 @@ function DashboardPage() {
             <p className="text-sm text-gray-500 mb-8">{email}</p>
           )}
 
-          <div className="border-t border-gray-100 pt-6">
+          <div className="border-t border-gray-100 pt-6 space-y-3">
+            <Link
+              to="/account/profile"
+              className="block w-full py-3 px-4 text-center bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+            >
+              My Profile
+            </Link>
             <button
               type="button"
               onClick={handleLogout}

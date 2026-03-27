@@ -92,4 +92,27 @@ export async function logout() {
   return data;
 }
 
+/**
+ * Requests a password reset email for the given email address.
+ * The server always returns 200 — it never reveals whether the email exists.
+ *
+ * @param {{ email: string }} payload
+ * @returns {Promise<{ message: string }>}
+ */
+export async function forgotPassword(payload) {
+  const { data } = await api.post('/api/v1/auth/forgot-password', payload);
+  return data;
+}
+
+/**
+ * Resets the user's password using a valid reset token.
+ *
+ * @param {{ token: string, newPassword: string }} payload
+ * @returns {Promise<{ message: string }>}
+ */
+export async function resetPassword(payload) {
+  const { data } = await api.post('/api/v1/auth/reset-password', payload);
+  return data;
+}
+
 export default api;

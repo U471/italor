@@ -192,7 +192,7 @@ async function refreshAccessToken(refreshToken) {
  * @returns {Promise<void>}
  */
 async function logoutUser(refreshToken) {
-  if (!refreshToken) return;
+  if (!refreshToken) { return; }
 
   const secret = getJwtSecret();
 

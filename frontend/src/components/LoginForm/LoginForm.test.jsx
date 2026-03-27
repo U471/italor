@@ -11,7 +11,6 @@ jest.mock('../../services/api', () => ({
 // ── Mock Zustand authStore ────────────────────────────────────────────────────
 const mockSetAuth = jest.fn();
 jest.mock('../../store/authStore', () => {
-  const actual = jest.requireActual('../../store/authStore');
   return {
     __esModule: true,
     default: jest.fn((selector) =>

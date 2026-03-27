@@ -13,12 +13,18 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// ── Request interceptor — attach JWT if present ───────────────────────────────
+// ── Request interceptor — attach JWT from Zustand store if present ─────────────
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Dynamically read from Zustand store to always get the latest token
+    try {
+      const { useAuthStore } = require('../store/authStore');
+      const token = useAuthStore.getState().accessToken;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // Store not yet initialized — skip
     }
     return config;
   },
@@ -51,6 +57,38 @@ api.interceptors.response.use(
  */
 export async function registerUser(payload) {
   const { data } = await api.post('/api/v1/auth/register', payload);
+  return data;
+}
+
+/**
+ * Logs in a user with email and password.
+ * Returns accessToken in body; refresh token is set as httpOnly cookie by server.
+ *
+ * @param {{ email: string, password: string }} payload
+ * @returns {Promise<{ message: string, accessToken: string, user: object }>}
+ */
+export async function loginUser(payload) {
+  const { data } = await api.post('/api/v1/auth/login', payload);
+  return data;
+}
+
+/**
+ * Exchanges the refresh token cookie for a new access token.
+ *
+ * @returns {Promise<{ accessToken: string }>}
+ */
+export async function refreshToken() {
+  const { data } = await api.post('/api/v1/auth/refresh-token');
+  return data;
+}
+
+/**
+ * Logs out the user — clears refresh token from DB and cookie.
+ *
+ * @returns {Promise<{ message: string }>}
+ */
+export async function logout() {
+  const { data } = await api.post('/api/v1/auth/logout');
   return data;
 }
 

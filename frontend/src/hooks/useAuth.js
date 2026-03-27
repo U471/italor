@@ -56,7 +56,7 @@ function useAuth() {
     return () => {
       cancelled = true;
     };
-  }, []); // Run once on mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: run once on mount to restore session
 
   function login(userData, token) {
     setAuth({ user: userData, accessToken: token });

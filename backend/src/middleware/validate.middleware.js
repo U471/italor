@@ -48,6 +48,23 @@ const registerValidationRules = [
 ];
 
 /**
+ * express-validator rules for POST /api/v1/auth/login.
+ */
+const loginValidationRules = [
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Please enter a valid email address')
+    .normalizeEmail(),
+
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required'),
+];
+
+/**
  * Middleware that checks for express-validator errors and responds 400 if any.
  */
 function handleValidationErrors(req, res, next) {
@@ -61,4 +78,4 @@ function handleValidationErrors(req, res, next) {
   return next();
 }
 
-module.exports = { registerValidationRules, handleValidationErrors };
+module.exports = { registerValidationRules, loginValidationRules, handleValidationErrors };

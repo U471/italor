@@ -4,6 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 const healthRouter = require('./routes/health');
 const authRouter = require('./routes/auth.routes');
@@ -25,7 +26,7 @@ app.use(
       }
       const allowedOrigins = process.env.ALLOWED_ORIGINS
         ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-        : ['http://localhost:5173', 'http://localhost:3000'];
+        : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -40,6 +41,7 @@ app.use(
 // ── Request parsing ──────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 app.use(compression());
 
 // ── Logging ──────────────────────────────────────────────────────────────────

@@ -32,6 +32,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
     "babel-jest": "^29.7.0",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
@@ -43,13 +44,33 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["@testing-library/jest-dom"],
+    "setupFilesAfterEnv": [
+      "@testing-library/jest-dom"
+    ],
     "transform": {
-      "^.+\\.[jt]sx?$": ["babel-jest", {"presets": ["@babel/preset-env", ["@babel/preset-react", {"runtime": "automatic"}]]}]
+      "^.+\\.[jt]sx?$": [
+        "babel-jest",
+        {
+          "presets": [
+            "@babel/preset-env",
+            [
+              "@babel/preset-react",
+              {
+                "runtime": "automatic"
+              }
+            ]
+          ],
+          "plugins": ["babel-plugin-transform-import-meta"]
+        }
+      ]
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(react-router|react-router-dom)/)"
+    ],
     "moduleNameMapper": {
       "\\.(css|less|scss|sass)$": "<rootDir>/src/__mocks__/styleMock.cjs",
-      "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/src/__mocks__/fileMock.cjs"
+      "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/src/__mocks__/fileMock.cjs",
+      "^.+/services/api(\\.js)?$": "<rootDir>/src/__mocks__/api.js"
     },
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
@@ -64,6 +85,9 @@
         "statements": 70
       }
     },
-    "coverageReporters": ["text", "lcov"]
+    "coverageReporters": [
+      "text",
+      "lcov"
+    ]
   }
 }

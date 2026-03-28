@@ -39,7 +39,7 @@ describe('BuilderPage', () => {
     expect(screen.getByText(/suit configurator/i)).toBeInTheDocument();
   });
 
-  it('renders the step progress bar with all 7 steps', () => {
+  it('renders the step progress bar with all 8 steps', () => {
     renderBuilder();
     const nav = screen.getByRole('navigation', { name: /configurator progress/i });
     expect(nav).toBeInTheDocument();
@@ -50,7 +50,8 @@ describe('BuilderPage', () => {
     expect(screen.getByRole('button', { name: /step 4: lining/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /step 5: details/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /step 6: monogram/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /step 7: review/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /step 7: measurements/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /step 8: review/i })).toBeInTheDocument();
   });
 
   it('starts on the Fabric step (step 1)', () => {
@@ -106,8 +107,8 @@ describe('BuilderPage', () => {
     const user = userEvent.setup();
     renderBuilder();
 
-    // Navigate to last step (6 clicks)
-    for (let i = 0; i < 6; i++) {
+    // Navigate to last step (7 clicks for 8 steps)
+    for (let i = 0; i < 7; i++) {
       await user.click(screen.getByRole('button', { name: /next →/i }));
     }
 
@@ -122,7 +123,7 @@ describe('BuilderPage', () => {
 
     await screen.findByText('Italian Merino Wool');
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       await user.click(screen.getByRole('button', { name: /next →/i }));
     }
 

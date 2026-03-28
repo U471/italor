@@ -8,6 +8,7 @@ import LapelStep from '../components/LapelStep/LapelStep';
 import LiningStep from '../components/LiningStep/LiningStep';
 import DetailsStep from '../components/DetailsStep/DetailsStep';
 import MonogramStep from '../components/MonogramStep/MonogramStep';
+import MeasurementForm from '../components/MeasurementForm/MeasurementForm';
 import SuitPreviewPanel from '../components/SuitPreviewPanel/SuitPreviewPanel';
 import SaveDesignButton from '../components/SaveDesignButton/SaveDesignButton';
 import { useAutoSave } from '../hooks/useAutoSave';
@@ -115,6 +116,7 @@ function BuilderPage() {
               {stepId === 'lining' && <LiningStep />}
               {stepId === 'details' && <DetailsStep />}
               {stepId === 'monogram' && <MonogramStep />}
+              {stepId === 'measurements' && <MeasurementForm />}
               {stepId === 'review' && <ReviewStep config={config} />}
             </section>
 
@@ -214,6 +216,7 @@ function ReviewStep({ config }) {
     { label: 'Lining', value: config.lining ? `${config.lining.color} ${config.lining.pattern}` : null },
     { label: 'Details', value: config.details?.pocketStyle ? `${config.details.pocketStyle} pockets` : null },
     { label: 'Monogram', value: config.monogram?.text || null },
+    { label: 'Measurements', value: config.measurements ? `${config.measurements.fitPreference} fit` : null },
   ];
 
   return (

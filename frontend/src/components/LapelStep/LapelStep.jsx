@@ -74,7 +74,7 @@ function LapelStep() {
     if (styleId === 'tuxedo' && !current) {
       setLapel({ style: 'shawl', width: 'regular' });
     }
-  }, []); // run on mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleStyleSelect(styleValue) {
     setLapel({

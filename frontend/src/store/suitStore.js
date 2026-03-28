@@ -64,6 +64,9 @@ const useSuitStore = create(
 
       setDesignId: (designId) => set({ designId }),
 
+      loadConfig: (newConfig) =>
+        set({ config: { ...INITIAL_CONFIG, ...newConfig }, currentStep: 0 }),
+
       // ── Helpers ──────────────────────────────────────────────────────────────
       isStepComplete: (stepIndex) => {
         const { config } = get();

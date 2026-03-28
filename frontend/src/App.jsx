@@ -9,6 +9,7 @@ import FabricCatalogPage from './pages/FabricCatalogPage';
 import FabricDetailPage from './pages/FabricDetailPage';
 import AdminFabricPage from './pages/admin/AdminFabricPage';
 import BuilderPage from './pages/BuilderPage';
+import MyDesignsPage from './pages/MyDesignsPage';
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
@@ -51,6 +52,14 @@ function App() {
         <Route path="/fabrics" element={<FabricCatalogPage />} />
         <Route path="/fabrics/:id" element={<FabricDetailPage />} />
         <Route path="/builder" element={<BuilderPage />} />
+        <Route
+          path="/account/designs"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <MyDesignsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/fabrics"
           element={

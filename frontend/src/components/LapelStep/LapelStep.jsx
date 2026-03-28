@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import useSuitStore from '../../store/suitStore';
 
 const LAPEL_STYLES = [
@@ -52,24 +53,33 @@ const LAPEL_STYLES = [
 ];
 
 const WIDTH_OPTIONS = [
-  { value: 'narrow', label: 'Narrow', hint: '< 7 cm' },
-  { value: 'standard', label: 'Standard', hint: '7–9 cm' },
-  { value: 'wide', label: 'Wide', hint: '> 9 cm' },
+  { value: 'narrow', label: 'Narrow (6 cm)' },
+  { value: 'regular', label: 'Regular (8 cm)' },
+  { value: 'wide', label: 'Wide (10 cm)' },
 ];
 
 /**
  * LapelStep — SCRUM-25
  * Lets the user choose lapel style (notch/peak/shawl) and width.
  * Reads and writes directly from/to suitStore.
+ * Auto-selects shawl lapel when tuxedo suit style is chosen.
  */
 function LapelStep() {
   const { config, setLapel } = useSuitStore();
   const current = config.lapel;
 
+  // Auto-select shawl + regular width when tuxedo style is chosen
+  useEffect(() => {
+    const styleId = config?.style?.id;
+    if (styleId === 'tuxedo' && !current) {
+      setLapel({ style: 'shawl', width: 'regular' });
+    }
+  }, []); // run on mount
+
   function handleStyleSelect(styleValue) {
     setLapel({
       style: styleValue,
-      width: current?.style === styleValue ? (current.width ?? 'standard') : 'standard',
+      width: current?.style === styleValue ? (current.width ?? 'regular') : 'regular',
     });
   }
 
@@ -129,9 +139,6 @@ function LapelStep() {
                   }`}
                 >
                   <span className="font-semibold">{w.label}</span>
-                  <span className={`text-xs mt-0.5 ${isActive ? 'text-brand-100' : 'text-gray-400'}`}>
-                    {w.hint}
-                  </span>
                 </button>
               );
             })}

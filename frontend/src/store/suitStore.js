@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export const BUILDER_STEPS = [
   { id: 'fabric', label: 'Fabric' },
@@ -19,59 +20,64 @@ const INITIAL_CONFIG = {
   monogram: null,     // { text, position, font }
 };
 
-const useSuitStore = create((set, get) => ({
-  currentStep: 0,
-  config: { ...INITIAL_CONFIG },
-  designId: null,
+const useSuitStore = create(
+  persist(
+    (set, get) => ({
+      currentStep: 0,
+      config: { ...INITIAL_CONFIG },
+      designId: null,
 
-  // ── Step navigation ──────────────────────────────────────────────────────
-  goNext: () =>
-    set((state) => ({
-      currentStep: Math.min(state.currentStep + 1, BUILDER_STEPS.length - 1),
-    })),
+      // ── Step navigation ──────────────────────────────────────────────────────
+      goNext: () =>
+        set((state) => ({
+          currentStep: Math.min(state.currentStep + 1, BUILDER_STEPS.length - 1),
+        })),
 
-  goPrev: () =>
-    set((state) => ({
-      currentStep: Math.max(state.currentStep - 1, 0),
-    })),
+      goPrev: () =>
+        set((state) => ({
+          currentStep: Math.max(state.currentStep - 1, 0),
+        })),
 
-  goToStep: (index) =>
-    set(() => ({
-      currentStep: Math.max(0, Math.min(index, BUILDER_STEPS.length - 1)),
-    })),
+      goToStep: (index) =>
+        set(() => ({
+          currentStep: Math.max(0, Math.min(index, BUILDER_STEPS.length - 1)),
+        })),
 
-  // ── Config setters ───────────────────────────────────────────────────────
-  setFabric: (fabric) =>
-    set((state) => ({ config: { ...state.config, fabric } })),
+      // ── Config setters ───────────────────────────────────────────────────────
+      setFabric: (fabric) =>
+        set((state) => ({ config: { ...state.config, fabric } })),
 
-  setStyle: (style) =>
-    set((state) => ({ config: { ...state.config, style } })),
+      setStyle: (style) =>
+        set((state) => ({ config: { ...state.config, style } })),
 
-  setLapel: (lapel) =>
-    set((state) => ({ config: { ...state.config, lapel } })),
+      setLapel: (lapel) =>
+        set((state) => ({ config: { ...state.config, lapel } })),
 
-  setLining: (lining) =>
-    set((state) => ({ config: { ...state.config, lining } })),
+      setLining: (lining) =>
+        set((state) => ({ config: { ...state.config, lining } })),
 
-  setDetails: (details) =>
-    set((state) => ({ config: { ...state.config, details } })),
+      setDetails: (details) =>
+        set((state) => ({ config: { ...state.config, details } })),
 
-  setMonogram: (monogram) =>
-    set((state) => ({ config: { ...state.config, monogram } })),
+      setMonogram: (monogram) =>
+        set((state) => ({ config: { ...state.config, monogram } })),
 
-  setDesignId: (designId) => set({ designId }),
+      setDesignId: (designId) => set({ designId }),
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
-  isStepComplete: (stepIndex) => {
-    const { config } = get();
-    const step = BUILDER_STEPS[stepIndex];
-    if (!step) { return false; }
-    if (step.id === 'review') { return false; }
-    return config[step.id] !== null;
-  },
+      // ── Helpers ──────────────────────────────────────────────────────────────
+      isStepComplete: (stepIndex) => {
+        const { config } = get();
+        const step = BUILDER_STEPS[stepIndex];
+        if (!step) { return false; }
+        if (step.id === 'review') { return false; }
+        return config[step.id] !== null;
+      },
 
-  reset: () =>
-    set({ currentStep: 0, config: { ...INITIAL_CONFIG }, designId: null }),
-}));
+      reset: () =>
+        set({ currentStep: 0, config: { ...INITIAL_CONFIG }, designId: null }),
+    }),
+    { name: 'suit-config' }
+  )
+);
 
 export default useSuitStore;

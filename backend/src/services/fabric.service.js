@@ -1,6 +1,7 @@
 'use strict';
 
 const Fabric = require('../models/Fabric');
+const Review = require('../models/Review');
 
 const DEFAULT_LIMIT = 24;
 const MAX_LIMIT = 100;
@@ -93,4 +94,73 @@ async function getFabricFilterOptions() {
   return { materials, colors, patterns };
 }
 
-module.exports = { getFabrics, getFabricFilterOptions };
+/**
+ * Returns a single fabric by MongoDB _id, with aggregated average rating.
+ * Returns null if not found or inactive.
+ *
+ * @param {string} id  MongoDB ObjectId string
+ * @returns {Promise<object|null>}
+ */
+async function getFabricById(id) {
+  const fabric = await Fabric.findOne({ _id: id, isActive: true }).lean();
+  if (!fabric) return null;
+
+  const agg = await Review.aggregate([
+    { $match: { fabric: fabric._id } },
+    { $group: { _id: null, averageRating: { $avg: '$rating' }, reviewCount: { $sum: 1 } } },
+  ]);
+
+  fabric.averageRating = agg.length ? Math.round(agg[0].averageRating * 10) / 10 : null;
+  fabric.reviewCount = agg.length ? agg[0].reviewCount : 0;
+
+  return fabric;
+}
+
+/**
+ * Returns paginated reviews for a fabric.
+ *
+ * @param {string} fabricId  MongoDB ObjectId string
+ * @param {object} params
+ * @param {number} [params.page]   Page number (1-based, default: 1)
+ * @param {number} [params.limit]  Items per page (default: 10, max: 50)
+ * @returns {Promise<{ reviews: object[], total: number, page: number, pages: number }>}
+ */
+async function getFabricReviews(fabricId, { page, limit } = {}) {
+  const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+  const parsedLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const [reviews, total] = await Promise.all([
+    Review.find({ fabric: fabricId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parsedLimit)
+      .lean(),
+    Review.countDocuments({ fabric: fabricId }),
+  ]);
+
+  return {
+    reviews,
+    total,
+    page: parsedPage,
+    pages: Math.ceil(total / parsedLimit),
+  };
+}
+
+/**
+ * Returns related fabrics — same material or color, excluding the given fabric, limit 6.
+ *
+ * @param {object} fabric  The reference fabric document
+ * @returns {Promise<object[]>}
+ */
+async function getRelatedFabrics(fabric) {
+  return Fabric.find({
+    _id: { $ne: fabric._id },
+    isActive: true,
+    $or: [{ material: fabric.material }, { color: fabric.color }],
+  })
+    .limit(6)
+    .lean();
+}
+
+module.exports = { getFabrics, getFabricFilterOptions, getFabricById, getFabricReviews, getRelatedFabrics };

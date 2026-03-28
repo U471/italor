@@ -72,6 +72,29 @@ const fabricSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    images: {
+      type: [String],
+      default: [],
+    },
+    season: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      enum: ['all-year', 'summer', 'winter', 'spring-autumn'],
+      default: 'all-year',
+    },
+    careInstructions: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Care instructions cannot exceed 500 characters'],
+      default: '',
+    },
+    patternDescription: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Pattern description cannot exceed 500 characters'],
+      default: '',
+    },
   },
   {
     timestamps: true,

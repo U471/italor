@@ -1,6 +1,15 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+
+jest.mock('./services/measurement.service', () => ({
+  getProfiles: jest.fn().mockResolvedValue({ data: { data: { profiles: [] } } }),
+  saveProfile: jest.fn(),
+  updateProfile: jest.fn(),
+  deleteProfile: jest.fn(),
+}));
+
+
 import App from './App';
 
 /**

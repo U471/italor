@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import useSuitStore, { BUILDER_STEPS } from '../store/suitStore';
 import StepProgress from '../components/StepProgress/StepProgress';
 import StyleStep from '../components/StyleStep/StyleStep';
+import LapelStep from '../components/LapelStep/LapelStep';
 import { getFabricById } from '../services/api';
 
 /**
@@ -90,7 +91,7 @@ function BuilderPage() {
 
           {stepId === 'fabric' && <FabricStep fabric={config.fabric} fabricId={fabricId} />}
           {stepId === 'style' && <StyleStep />}
-          {stepId === 'lapel' && <PlaceholderStep label="Lapel" next="SCRUM-25" />}
+          {stepId === 'lapel' && <LapelStep />}
           {stepId === 'lining' && <PlaceholderStep label="Lining" next="SCRUM-26" />}
           {stepId === 'details' && <PlaceholderStep label="Details" next="SCRUM-27" />}
           {stepId === 'monogram' && <PlaceholderStep label="Monogram" next="SCRUM-28" />}

@@ -103,7 +103,7 @@ async function getFabricFilterOptions() {
  */
 async function getFabricById(id) {
   const fabric = await Fabric.findOne({ _id: id, isActive: true }).lean();
-  if (!fabric) return null;
+  if (!fabric) { return null; }
 
   const agg = await Review.aggregate([
     { $match: { fabric: fabric._id } },

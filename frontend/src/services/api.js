@@ -157,4 +157,27 @@ export async function updateAvatar(formData) {
   return data;
 }
 
+// ── Fabric catalog endpoints ──────────────────────────────────────────────────
+
+/**
+ * Fetches paginated fabric catalog with optional filters/search/sort.
+ *
+ * @param {URLSearchParams|object} params
+ * @returns {Promise<{ fabrics: object[], total: number, page: number, pages: number, limit: number }>}
+ */
+export async function getFabrics(params) {
+  const { data } = await api.get('/api/v1/products', { params });
+  return data;
+}
+
+/**
+ * Returns distinct values for filter sidebar (materials, colors, patterns).
+ *
+ * @returns {Promise<{ materials: string[], colors: string[], patterns: string[] }>}
+ */
+export async function getFabricFilters() {
+  const { data } = await api.get('/api/v1/products/filters');
+  return data;
+}
+
 export default api;

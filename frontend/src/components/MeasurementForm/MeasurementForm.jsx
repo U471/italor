@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSuitStore from '../../store/suitStore';
+import useAuthStore from '../../store/authStore';
 import {
   JACKET_FIELDS,
   TROUSER_FIELDS,
@@ -9,14 +10,17 @@ import { STANDARD_SIZES } from '../../constants/standardSizes';
 import SizeChartModal from '../SizeChartModal/SizeChartModal';
 
 /**
- * MeasurementForm — SCRUM-31
+ * MeasurementForm — SCRUM-31 / SCRUM-32
  * Step 7 of the suit configurator.
  * Collects 15 body measurements in Jacket (10) + Trousers (5) sections.
  * Supports cm / inches toggle with auto-conversion, fit preference,
  * per-field help tooltips, inline min/max validation, and saves to store.
+ * SCRUM-32: "Use Saved Profile" section + "Save as Profile" button.
  */
 function MeasurementForm() {
   const { config, setMeasurements } = useSuitStore();
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const isAuthenticated = Boolean(accessToken);
 
   const [unit, setUnit] = useState('cm');
   const [fitPreference, setFitPreference] = useState('regular');
@@ -25,6 +29,21 @@ function MeasurementForm() {
   const [helpField, setHelpField] = useState(null);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [appliedSize, setAppliedSize] = useState(null);
+
+  // Profile state
+  const [profiles, setProfiles] = useState([]);
+  const [profileName, setProfileName] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [showSaveForm, setShowSaveForm] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // ── Load profiles on mount / auth change ────────────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    getProfiles()
+      .then((res) => setProfiles(res.data.data.profiles))
+      .catch(() => setProfiles([]));
+  }, [isAuthenticated]);
 
   // ── Unit conversion helpers ──────────────────────────────────────────────
 
@@ -139,6 +158,44 @@ function MeasurementForm() {
         </div>
       )}
 
+      {/* ── Use Saved Profile section ─────────────────────────────────────── */}
+      {isAuthenticated && profiles.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Use Saved Profile</h3>
+          <div className="flex flex-wrap gap-3">
+            {profiles.map((profile) => (
+              <div
+                key={profile._id}
+                className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5 bg-white"
+              >
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-gray-800">{profile.name}</span>
+                    {profile.isDefault && (
+                      <span className="text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-medium">
+                        Default
+                      </span>
+                    )}
+                  </div>
+                  {profile.measurements?.fitPreference && (
+                    <span className="text-xs text-gray-400 capitalize">
+                      {profile.measurements.fitPreference} fit
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => applyProfile(profile)}
+                  className="ml-2 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  Use This
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Unit toggle ──────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium text-gray-700">Unit:</span>
@@ -245,6 +302,16 @@ function MeasurementForm() {
         </div>
       )}
 
+      {/* ── Profile save success toast ────────────────────────────────────── */}
+      {saveSuccess && (
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Profile saved successfully.
+        </div>
+      )}
+
       {/* ── Action buttons ────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3">
         <button
@@ -264,7 +331,46 @@ function MeasurementForm() {
             Add to Cart
           </button>
         )}
+
+        {/* ── Save as Profile (only when logged in + all valid) ───────────── */}
+        {isAuthenticated && allValid && (
+          <button
+            type="button"
+            onClick={() => setShowSaveForm((prev) => !prev)}
+            className="px-6 py-2.5 rounded-lg border border-indigo-300 text-indigo-700 text-sm font-medium hover:bg-indigo-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            Save as Profile
+          </button>
+        )}
       </div>
+
+      {/* ── Save as Profile inline form ───────────────────────────────────── */}
+      {isAuthenticated && allValid && showSaveForm && (
+        <div className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+          <input
+            type="text"
+            value={profileName}
+            onChange={(e) => setProfileName(e.target.value)}
+            placeholder="e.g. My Regular Fit"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <button
+            type="button"
+            onClick={handleSaveProfile}
+            disabled={savingProfile || !profileName.trim()}
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {savingProfile ? 'Saving…' : 'Confirm'}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setShowSaveForm(false); setProfileName(''); }}
+            className="text-sm text-gray-500 hover:text-gray-700"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
   );
 }

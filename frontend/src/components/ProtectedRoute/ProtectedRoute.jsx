@@ -48,7 +48,7 @@ function ProtectedRoute({ children, isLoading = false }) {
   }
 
   if (!accessToken) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={'/login?returnUrl=' + encodeURIComponent(window.location.pathname)} replace />;
   }
 
   return children;

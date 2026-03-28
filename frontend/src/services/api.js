@@ -180,4 +180,27 @@ export async function getFabricFilters() {
   return data;
 }
 
+/**
+ * Fetches a single fabric by id, including averageRating, reviewCount, and related fabrics.
+ *
+ * @param {string} id  MongoDB ObjectId
+ * @returns {Promise<{ fabric: object, related: object[] }>}
+ */
+export async function getFabricById(id) {
+  const { data } = await api.get(`/api/v1/products/${id}`);
+  return data;
+}
+
+/**
+ * Fetches paginated reviews for a fabric.
+ *
+ * @param {string} id      MongoDB ObjectId of the fabric
+ * @param {object} params  { page, limit }
+ * @returns {Promise<{ reviews: object[], total: number, page: number, pages: number }>}
+ */
+export async function getFabricReviews(id, params) {
+  const { data } = await api.get(`/api/v1/products/${id}/reviews`, { params });
+  return data;
+}
+
 export default api;

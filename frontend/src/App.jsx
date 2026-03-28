@@ -6,6 +6,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import FabricCatalogPage from './pages/FabricCatalogPage';
+import FabricDetailPage from './pages/FabricDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
 
@@ -45,6 +46,7 @@ function App() {
           }
         />
         <Route path="/fabrics" element={<FabricCatalogPage />} />
+        <Route path="/fabrics/:id" element={<FabricDetailPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>

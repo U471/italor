@@ -7,7 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import FabricCatalogPage from './pages/FabricCatalogPage';
 import FabricDetailPage from './pages/FabricDetailPage';
-import AdminFabricPage from './pages/admin/AdminFabricPage';
+import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
 
@@ -64,13 +64,25 @@ function App() {
 
 function HomePage() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen px-4 text-center">
-      <h1 className="text-4xl font-serif font-bold text-gray-900 mb-4">
-        iTailor
-      </h1>
-      <p className="text-lg text-gray-600 max-w-md">
-        Custom made-to-measure suits, delivered to your door.
-      </p>
+    <main>
+      {/* Hero */}
+      <section className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center bg-gray-50">
+        <h1 className="text-4xl font-serif font-bold text-gray-900 mb-4">
+          iTailor
+        </h1>
+        <p className="text-lg text-gray-600 max-w-md mb-8">
+          Custom made-to-measure suits, delivered to your door.
+        </p>
+        <a
+          href="/fabrics"
+          className="px-8 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors"
+        >
+          Explore Fabrics
+        </a>
+      </section>
+
+      {/* Featured fabrics */}
+      <FeaturedFabrics />
     </main>
   );
 }

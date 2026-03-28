@@ -30,4 +30,8 @@ export const adminUpdateFabric = jest.fn();
 export const adminDeleteFabric = jest.fn();
 export const adminUploadFabricImage = jest.fn();
 export const adminRemoveFabricImage = jest.fn();
+export const createDesign = jest.fn();
+export const getDesign = jest.fn();
+export const updateDesign = jest.fn();
+export const listMyDesigns = jest.fn();
 export default api;

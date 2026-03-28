@@ -48,6 +48,14 @@ function App() {
         />
         <Route path="/fabrics" element={<FabricCatalogPage />} />
         <Route path="/fabrics/:id" element={<FabricDetailPage />} />
+        <Route
+          path="/admin/fabrics"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <AdminFabricPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>

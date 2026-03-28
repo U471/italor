@@ -203,4 +203,44 @@ export async function getFabricReviews(id, params) {
   return data;
 }
 
+// ── Admin fabric endpoints ────────────────────────────────────────────────────
+
+/** @returns {Promise<{ fabrics, total, page, pages }>} */
+export async function adminGetFabrics(params) {
+  const { data } = await api.get('/api/v1/admin/products', { params });
+  return data;
+}
+
+/** @returns {Promise<{ fabric }>} */
+export async function adminCreateFabric(payload) {
+  const { data } = await api.post('/api/v1/admin/products', payload);
+  return data;
+}
+
+/** @returns {Promise<{ fabric }>} */
+export async function adminUpdateFabric(id, payload) {
+  const { data } = await api.put(`/api/v1/admin/products/${id}`, payload);
+  return data;
+}
+
+/** @returns {Promise<{ message }>} */
+export async function adminDeleteFabric(id) {
+  const { data } = await api.delete(`/api/v1/admin/products/${id}`);
+  return data;
+}
+
+/** @param {FormData} formData  Must contain field "image" */
+export async function adminUploadFabricImage(id, formData) {
+  const { data } = await api.post(`/api/v1/admin/products/${id}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+/** @param {string} imageUrl */
+export async function adminRemoveFabricImage(id, imageUrl) {
+  const { data } = await api.delete(`/api/v1/admin/products/${id}/images`, { data: { imageUrl } });
+  return data;
+}
+
 export default api;

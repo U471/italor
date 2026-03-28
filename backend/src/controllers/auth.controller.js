@@ -1,4 +1,4 @@
-const { registerUser } = require('../services/auth.service');
+const { registerUser, verifyEmail } = require('../services/auth.service');
 
 /**
  * POST /api/v1/auth/register
@@ -36,4 +36,19 @@ async function register(req, res) {
   }
 }
 
-module.exports = { register };
+const verifyEmailHandler = async (req, res, next) => {
+  try {
+    const { token } = req.query;
+    if (!token) {
+      const err = new Error('Token is required');
+      err.statusCode = 400;
+      return next(err);
+    }
+    await verifyEmail(token);
+    res.status(200).json({ status: 'success', message: 'Email verified successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, verifyEmailHandler };

@@ -66,4 +66,22 @@ async function registerUser({ firstName, lastName, email, password }) {
   return user;
 }
 
-module.exports = { registerUser };
+const verifyEmail = async (rawToken) => {
+  const hashed = crypto.createHash('sha256').update(rawToken).digest('hex');
+  const user = await User.findOne({
+    verificationToken: hashed,
+    verificationTokenExpiry: { $gt: Date.now() },
+  }).select('+verificationToken +verificationTokenExpiry');
+  if (!user) {
+    const err = new Error('Invalid or expired verification token');
+    err.statusCode = 400;
+    throw err;
+  }
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpiry = undefined;
+  await user.save();
+  return user;
+};
+
+module.exports = { registerUser, verifyEmail };

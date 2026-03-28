@@ -19,6 +19,7 @@ jest.mock('../src/middleware/upload.middleware', () => ({
       next();
     },
   },
+  uploadFabricImage: { single: jest.fn(() => (_req, _res, next) => next()) },
   cloudinary: { uploader: { destroy: jest.fn() } },
 }));
 

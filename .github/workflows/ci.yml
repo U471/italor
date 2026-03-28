@@ -69,7 +69,7 @@ jobs:
     env:
       NODE_ENV: test
       PORT: 5000
-      MONGODB_URI: ${{ secrets.MONGODB_URI_TEST || 'mongodb://localhost:27017/italor_test' }}
+      MONGO_URI: ${{ secrets.MONGO_URI_TEST || 'mongodb://localhost:27017/italor_test' }}
       JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-do-not-use-in-prod' }}
     steps:
       - uses: actions/checkout@v4
@@ -156,7 +156,7 @@ jobs:
       run:
         working-directory: frontend
     env:
-      VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
     steps:
       - uses: actions/checkout@v4
 

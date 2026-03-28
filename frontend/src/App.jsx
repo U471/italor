@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import FabricCatalogPage from './pages/FabricCatalogPage';
 import FabricDetailPage from './pages/FabricDetailPage';
+import AdminFabricPage from './pages/admin/AdminFabricPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
 
@@ -47,6 +48,14 @@ function App() {
         />
         <Route path="/fabrics" element={<FabricCatalogPage />} />
         <Route path="/fabrics/:id" element={<FabricDetailPage />} />
+        <Route
+          path="/admin/fabrics"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <AdminFabricPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>

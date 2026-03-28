@@ -11,6 +11,7 @@ const authRouter = require('./routes/auth.routes');
 const passwordRouter = require('./routes/password.routes');
 const userRouter = require('./routes/user.routes');
 const fabricRouter = require('./routes/fabric.routes');
+const adminRouter = require('./routes/admin.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFoundHandler } = require('./middleware/notFoundHandler');
 
@@ -68,6 +69,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/auth', passwordRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/products', fabricRouter);
+app.use('/api/v1/admin', adminRouter);
 
 // ── 404 + Error handlers ─────────────────────────────────────────────────────
 app.use(notFoundHandler);

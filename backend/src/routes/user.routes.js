@@ -20,6 +20,6 @@ router.put('/me', updateMe);
 router.put('/me/password', updatePassword);
 
 /** PUT  /api/v1/user/me/avatar — Upload new avatar */
-router.put('/me/avatar', uploadAvatar.single('avatar'), updateAvatarHandler);
+router.post('/me/avatar', uploadAvatar.single('avatar'), updateAvatarHandler);
 
 module.exports = router;

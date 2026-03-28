@@ -1,4 +1,5 @@
 import axios from 'axios';
+import useAuthStore from '../store/authStore';
 
 /**
  * Axios instance pre-configured for the iTailor API.
@@ -16,15 +17,9 @@ const api = axios.create({
 // ── Request interceptor — attach JWT from Zustand store if present ─────────────
 api.interceptors.request.use(
   (config) => {
-    // Dynamically read from Zustand store to always get the latest token
-    try {
-      const { useAuthStore } = require('../store/authStore');
-      const token = useAuthStore.getState().accessToken;
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch {
-      // Store not yet initialized — skip
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },

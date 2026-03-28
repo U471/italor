@@ -74,7 +74,7 @@ function LapelStep() {
     if (styleId === 'tuxedo' && !current) {
       setLapel({ style: 'shawl', width: 'regular' });
     }
-  }, []); // run on mount
+  }, [config?.style?.id, current, setLapel]);
 
   function handleStyleSelect(styleValue) {
     setLapel({

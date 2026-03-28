@@ -13,6 +13,15 @@ const api = axios.create({
   timeout: 15000,
 });
 
+// ── Token refresh queue ───────────────────────────────────────────────────────
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => (error ? prom.reject(error) : prom.resolve(token)));
+  failedQueue = [];
+};
+
 // ── Request interceptor — attach JWT from Zustand store if present ─────────────
 api.interceptors.request.use(
   (config) => {
@@ -31,10 +40,56 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ── Response interceptor — normalize error shape ──────────────────────────────
+// ── Response interceptor — handle 401 with token refresh, normalize errors ────
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await api.post('/api/v1/auth/refresh-token');
+        const newToken = data.accessToken;
+
+        try {
+          const { default: useAuthStore } = require('../store/authStore');
+          const currentUser = useAuthStore.getState().user;
+          useAuthStore.getState().setAuth({ user: currentUser, accessToken: newToken });
+        } catch {
+          // Store unavailable — skip update
+        }
+
+        processQueue(null, newToken);
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        try {
+          const { default: useAuthStore } = require('../store/authStore');
+          useAuthStore.getState().clearAuth();
+        } catch {
+          // Store unavailable
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     const message =
       error.response?.data?.error ||
       error.response?.data?.message ||

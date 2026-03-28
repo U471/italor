@@ -5,6 +5,7 @@ const {
   loginValidationRules,
   handleValidationErrors,
 } = require('../middleware/validate.middleware');
+const { authRateLimiter } = require('../middleware/rateLimiter.middleware');
 
 const router = Router();
 
@@ -12,13 +13,13 @@ const router = Router();
  * POST /api/v1/auth/register
  * Registers a new user and sends an email verification link.
  */
-router.post('/register', registerValidationRules, handleValidationErrors, register);
+router.post('/register', authRateLimiter, registerValidationRules, handleValidationErrors, register);
 
 /**
  * POST /api/v1/auth/login
  * Authenticates a user and returns an access token + sets refresh token cookie.
  */
-router.post('/login', loginValidationRules, handleValidationErrors, login);
+router.post('/login', authRateLimiter, loginValidationRules, handleValidationErrors, login);
 
 /**
  * POST /api/v1/auth/refresh-token

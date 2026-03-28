@@ -9,17 +9,25 @@ import { create } from 'zustand';
 const useAuthStore = create((set) => ({
   user: null,
   accessToken: null,
+  isAuthenticated: false,
+  isLoading: false,
 
   /**
    * Set auth state after a successful login or token refresh.
    * @param {{ user: object, accessToken: string }} payload
    */
-  setAuth: ({ user, accessToken }) => set({ user, accessToken }),
+  setAuth: ({ user, accessToken }) => set({ user, accessToken, isAuthenticated: true }),
 
   /**
    * Clear auth state on logout.
    */
-  clearAuth: () => set({ user: null, accessToken: null }),
+  clearAuth: () => set({ user: null, accessToken: null, isAuthenticated: false }),
+
+  /**
+   * Set loading state.
+   * @param {boolean} loading
+   */
+  setLoading: (loading) => set({ isLoading: loading }),
 }));
 
 export default useAuthStore;

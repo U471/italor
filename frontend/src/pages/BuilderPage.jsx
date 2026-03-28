@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import useSuitStore, { BUILDER_STEPS } from '../store/suitStore';
+import useAuthStore from '../store/authStore';
 import StepProgress from '../components/StepProgress/StepProgress';
 import StyleStep from '../components/StyleStep/StyleStep';
 import LapelStep from '../components/LapelStep/LapelStep';
@@ -8,6 +9,8 @@ import LiningStep from '../components/LiningStep/LiningStep';
 import DetailsStep from '../components/DetailsStep/DetailsStep';
 import MonogramStep from '../components/MonogramStep/MonogramStep';
 import SuitPreviewPanel from '../components/SuitPreviewPanel/SuitPreviewPanel';
+import SaveDesignButton from '../components/SaveDesignButton/SaveDesignButton';
+import { useAutoSave } from '../hooks/useAutoSave';
 import { getFabricById } from '../services/api';
 
 /**
@@ -30,6 +33,10 @@ function BuilderPage() {
     isStepComplete,
     reset,
   } = useSuitStore();
+
+  const { accessToken } = useAuthStore();
+  const isAuthenticated = Boolean(accessToken);
+  useAutoSave(config, isAuthenticated);
 
   // Pre-load fabric from URL param
   useEffect(() => {
@@ -69,7 +76,10 @@ function BuilderPage() {
           <Link to="/" className="text-xl font-serif font-bold text-gray-900">
             iTailor
           </Link>
-          <span className="text-sm text-gray-500">Suit Configurator</span>
+          <div className="flex items-center gap-3">
+            <SaveDesignButton />
+            <span className="text-sm text-gray-500">Suit Configurator</span>
+          </div>
         </div>
       </header>
 

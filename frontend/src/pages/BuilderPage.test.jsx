@@ -127,7 +127,7 @@ describe('BuilderPage', () => {
     }
 
     expect(screen.getByRole('heading', { level: 2, name: 'Review' })).toBeInTheDocument();
-    expect(screen.getByText('Italian Merino Wool')).toBeInTheDocument();
+    expect(screen.getAllByText('Italian Merino Wool').length).toBeGreaterThan(0);
   });
 
   it('renders iTailor home link in header', () => {

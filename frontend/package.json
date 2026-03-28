@@ -70,14 +70,16 @@
     "moduleNameMapper": {
       "\\.(css|less|scss|sass)$": "<rootDir>/src/__mocks__/styleMock.cjs",
       "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/src/__mocks__/fileMock.cjs",
-      "^.+/services/api(\\.js)?$": "<rootDir>/src/__mocks__/api.js"
+      "^.+/services/api(\\.js)?$": "<rootDir>/src/__mocks__/api.js",
+      "^.+/services/design\\.service(\\.js)?$": "<rootDir>/src/__mocks__/design.service.js"
     },
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/main.jsx",
       "!src/__mocks__/**",
       "!src/**/index.js",
-      "!src/services/api.js"
+      "!src/services/api.js",
+      "!src/services/design.service.js"
     ],
     "coverageThreshold": {
       "global": {

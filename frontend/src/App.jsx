@@ -9,10 +9,7 @@ import FabricCatalogPage from './pages/FabricCatalogPage';
 import FabricDetailPage from './pages/FabricDetailPage';
 import AdminFabricPage from './pages/admin/AdminFabricPage';
 import BuilderPage from './pages/BuilderPage';
-<<<<<<< HEAD
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
-=======
->>>>>>> 1cce05946c35c88b71d97c25d6a763df2d981f99
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
 

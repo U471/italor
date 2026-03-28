@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import useSuitStore, { BUILDER_STEPS } from '../store/suitStore';
 import StepProgress from '../components/StepProgress/StepProgress';
+import StyleStep from '../components/StyleStep/StyleStep';
 import { getFabricById } from '../services/api';
 
 /**
@@ -88,7 +89,7 @@ function BuilderPage() {
           </h2>
 
           {stepId === 'fabric' && <FabricStep fabric={config.fabric} fabricId={fabricId} />}
-          {stepId === 'style' && <PlaceholderStep label="Style" next="SCRUM-24" />}
+          {stepId === 'style' && <StyleStep />}
           {stepId === 'lapel' && <PlaceholderStep label="Lapel" next="SCRUM-25" />}
           {stepId === 'lining' && <PlaceholderStep label="Lining" next="SCRUM-26" />}
           {stepId === 'details' && <PlaceholderStep label="Details" next="SCRUM-27" />}

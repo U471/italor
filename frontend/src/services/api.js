@@ -243,4 +243,30 @@ export async function adminRemoveFabricImage(id, imageUrl) {
   return data;
 }
 
+// ── Suit design endpoints ─────────────────────────────────────────────────────
+
+/** @returns {Promise<{ design }>} */
+export async function createDesign(payload) {
+  const { data } = await api.post('/api/v1/designs', payload);
+  return data;
+}
+
+/** @returns {Promise<{ design }>} */
+export async function getDesign(id) {
+  const { data } = await api.get(`/api/v1/designs/${id}`);
+  return data;
+}
+
+/** @returns {Promise<{ design }>} */
+export async function updateDesign(id, payload) {
+  const { data } = await api.put(`/api/v1/designs/${id}`, payload);
+  return data;
+}
+
+/** @returns {Promise<{ designs }>} */
+export async function listMyDesigns() {
+  const { data } = await api.get('/api/v1/designs/mine');
+  return data;
+}
+
 export default api;

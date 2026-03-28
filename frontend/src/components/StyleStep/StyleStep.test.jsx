@@ -1,32 +1,66 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import StyleStep from './StyleStep';
+
+jest.mock('../../store/suitStore', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+
+jest.mock('../../constants/suitStyles', () => ({
+  SUIT_STYLES: [
+    {
+      id: 'single-2',
+      label: 'Single Breasted 2-Button',
+      description: 'The most versatile and classic choice.',
+      previewImageUrl: '/test/single-2.png',
+    },
+    {
+      id: 'double-6',
+      label: 'Double Breasted 6-Button',
+      description: 'The most formal double breasted option.',
+      previewImageUrl: '/test/double-6.png',
+    },
+    {
+      id: 'tuxedo',
+      label: 'Tuxedo',
+      description: 'Evening wear perfection.',
+      previewImageUrl: '/test/tuxedo.png',
+      tuxedoNote: 'Shawl lapel is recommended for this style.',
+    },
+  ],
+}));
+
 import useSuitStore from '../../store/suitStore';
 
-function renderStep() {
-  return render(<StyleStep />);
+const mockSetStyle = jest.fn();
+
+function renderStep(style = null) {
+  useSuitStore.mockReturnValue({
+    config: { style },
+    setStyle: mockSetStyle,
+  });
+  return render(
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <StyleStep />
+    </MemoryRouter>
+  );
 }
 
-beforeEach(() => {
-  useSuitStore.getState().reset();
-});
+beforeEach(() => jest.clearAllMocks());
 
-describe('StyleStep', () => {
-  it('renders both breasting option buttons', () => {
+describe('StyleStep — initial state', () => {
+  it('renders all style option buttons', () => {
     renderStep();
-    expect(screen.getByRole('button', { name: /single breasted/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /double breasted/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /single breasted 2-button/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /double breasted 6-button/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /tuxedo/i })).toBeInTheDocument();
   });
 
-  it('neither option is pressed initially', () => {
+  it('all buttons have aria-pressed="false" when no style is selected', () => {
     renderStep();
-    expect(screen.getByRole('button', { name: /single breasted/i })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('button', { name: /double breasted/i })).toHaveAttribute('aria-pressed', 'false');
-  });
-
-  it('does not show button count selector before a style is chosen', () => {
-    renderStep();
-    expect(screen.queryByText(/number of buttons/i)).not.toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    buttons.forEach((btn) => expect(btn).toHaveAttribute('aria-pressed', 'false'));
   });
 
   it('shows "Select a style above to continue" hint initially', () => {
@@ -34,113 +68,60 @@ describe('StyleStep', () => {
     expect(screen.getByText(/select a style above to continue/i)).toBeInTheDocument();
   });
 
-  it('marks single breasted as pressed after clicking it', async () => {
-    const user = userEvent.setup();
+  it('renders preview images for each style', () => {
     renderStep();
+    expect(screen.getByAltText('Single Breasted 2-Button')).toBeInTheDocument();
+    expect(screen.getByAltText('Double Breasted 6-Button')).toBeInTheDocument();
+    expect(screen.getByAltText('Tuxedo')).toBeInTheDocument();
+  });
+});
 
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-
-    expect(screen.getByRole('button', { name: /single breasted/i })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: /double breasted/i })).toHaveAttribute('aria-pressed', 'false');
+describe('StyleStep — style selection', () => {
+  it('calls setStyle with id and label when a style is clicked', () => {
+    renderStep();
+    fireEvent.click(screen.getByRole('button', { name: /single breasted 2-button/i }));
+    expect(mockSetStyle).toHaveBeenCalledWith({
+      id: 'single-2',
+      label: 'Single Breasted 2-Button',
+    });
   });
 
-  it('marks double breasted as pressed after clicking it', async () => {
-    const user = userEvent.setup();
+  it('calls setStyle with correct values when double breasted is clicked', () => {
     renderStep();
-
-    await user.click(screen.getByRole('button', { name: /double breasted/i }));
-
-    expect(screen.getByRole('button', { name: /double breasted/i })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: /double breasted 6-button/i }));
+    expect(mockSetStyle).toHaveBeenCalledWith({
+      id: 'double-6',
+      label: 'Double Breasted 6-Button',
+    });
   });
 
-  it('shows button count options for single breasted (1, 2, 3)', async () => {
-    const user = userEvent.setup();
-    renderStep();
-
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-
-    expect(screen.getByText(/number of buttons/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '3' })).toBeInTheDocument();
+  it('marks the selected style button as aria-pressed="true"', () => {
+    renderStep({ id: 'double-6', label: 'Double Breasted 6-Button' });
+    const btn = screen.getByRole('button', { name: /double breasted 6-button/i });
+    expect(btn).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('shows button count options for double breasted (4, 6)', async () => {
-    const user = userEvent.setup();
-    renderStep();
-
-    await user.click(screen.getByRole('button', { name: /double breasted/i }));
-
-    expect(screen.getByText(/number of buttons/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '4' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '6' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '3' })).not.toBeInTheDocument();
+  it('leaves unselected buttons as aria-pressed="false"', () => {
+    renderStep({ id: 'single-2', label: 'Single Breasted 2-Button' });
+    const doubleBtn = screen.getByRole('button', { name: /double breasted 6-button/i });
+    expect(doubleBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('sets default button count (2) when single breasted is selected', async () => {
-    const user = userEvent.setup();
+  it('hides the hint text once a style is selected', () => {
+    renderStep({ id: 'single-2', label: 'Single Breasted 2-Button' });
+    expect(screen.queryByText(/select a style above to continue/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('StyleStep — tuxedo note', () => {
+  it('shows tuxedoNote text for the tuxedo option', () => {
     renderStep();
-
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-
-    expect(useSuitStore.getState().config.style).toEqual({ breasting: 'single', buttons: 2 });
+    expect(screen.getByText(/shawl lapel is recommended for this style/i)).toBeInTheDocument();
   });
 
-  it('sets default button count (6) when double breasted is selected', async () => {
-    const user = userEvent.setup();
+  it('does not show tuxedoNote for non-tuxedo styles', () => {
     renderStep();
-
-    await user.click(screen.getByRole('button', { name: /double breasted/i }));
-
-    expect(useSuitStore.getState().config.style).toEqual({ breasting: 'double', buttons: 6 });
-  });
-
-  it('updates button count when a different count is clicked', async () => {
-    const user = userEvent.setup();
-    renderStep();
-
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-    await user.click(screen.getByRole('button', { name: '1' }));
-
-    expect(useSuitStore.getState().config.style.buttons).toBe(1);
-  });
-
-  it('marks the selected button count as pressed', async () => {
-    const user = userEvent.setup();
-    renderStep();
-
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-    await user.click(screen.getByRole('button', { name: '3' }));
-
-    expect(screen.getByRole('button', { name: '3' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-pressed', 'false');
-  });
-
-  it('shows selection summary text after choosing style and buttons', async () => {
-    const user = userEvent.setup();
-    renderStep();
-
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-
-    expect(screen.getByText(/2-button single-breasted selected/i)).toBeInTheDocument();
-  });
-
-  it('resets button count to new default when switching breasting type', async () => {
-    const user = userEvent.setup();
-    renderStep();
-
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-    await user.click(screen.getByRole('button', { name: /double breasted/i }));
-
-    expect(useSuitStore.getState().config.style).toEqual({ breasting: 'double', buttons: 6 });
-  });
-
-  it('marks style step as complete in store after selection', async () => {
-    const user = userEvent.setup();
-    renderStep();
-
-    await user.click(screen.getByRole('button', { name: /single breasted/i }));
-
-    expect(useSuitStore.getState().isStepComplete(1)).toBe(true);
+    const singleBtn = screen.getByRole('button', { name: /single breasted 2-button/i });
+    expect(singleBtn).not.toHaveTextContent(/shawl lapel/i);
   });
 });

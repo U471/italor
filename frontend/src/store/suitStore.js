@@ -8,16 +8,18 @@ export const BUILDER_STEPS = [
   { id: 'lining', label: 'Lining' },
   { id: 'details', label: 'Details' },
   { id: 'monogram', label: 'Monogram' },
+  { id: 'measurements', label: 'Measurements' },
   { id: 'review', label: 'Review' },
 ];
 
 const INITIAL_CONFIG = {
-  fabric: null,       // { _id, name, material, color, price, thumbnailUrl }
-  style: null,        // { breasting, buttons }
-  lapel: null,        // { style, width }
-  lining: null,       // { color, pattern }
-  details: null,      // { pocketStyle, ventStyle, sleeveButtons }
-  monogram: null,     // { text, position, font }
+  fabric: null,        // { _id, name, material, color, price, thumbnailUrl }
+  style: null,         // { breasting, buttons }
+  lapel: null,         // { style, width }
+  lining: null,        // { color, pattern }
+  details: null,       // { pocketStyle, ventStyle, sleeveButtons }
+  monogram: null,      // { text, position, font }
+  measurements: null,  // { unit, fitPreference, jacket: {...}, trousers: {...} }
 };
 
 const useSuitStore = create(
@@ -61,6 +63,9 @@ const useSuitStore = create(
 
       setMonogram: (monogram) =>
         set((state) => ({ config: { ...state.config, monogram } })),
+
+      setMeasurements: (measurements) =>
+        set((state) => ({ config: { ...state.config, measurements } })),
 
       setDesignId: (designId) => set({ designId }),
 

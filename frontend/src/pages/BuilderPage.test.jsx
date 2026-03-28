@@ -38,7 +38,9 @@ function renderBuilder(path = '/builder') {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  useAuthStore.mockReturnValue({ accessToken: null });
+  useAuthStore.mockImplementation((selector) =>
+    selector ? selector({ accessToken: null }) : { accessToken: null }
+  );
 });
 
 describe('BuilderPage', () => {

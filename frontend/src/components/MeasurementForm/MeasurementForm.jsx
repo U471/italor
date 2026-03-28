@@ -6,6 +6,8 @@ import {
   TROUSER_FIELDS,
   FIT_PREFERENCES,
 } from '../../constants/measurementFields';
+import { STANDARD_SIZES } from '../../constants/standardSizes';
+import SizeChartModal from '../SizeChartModal/SizeChartModal';
 import { getProfiles, saveProfile } from '../../services/measurement.service';
 
 /**
@@ -26,6 +28,8 @@ function MeasurementForm() {
   const [values, setValues] = useState({});
   const [errors, setErrors] = useState({});
   const [helpField, setHelpField] = useState(null);
+  const [showSizeChart, setShowSizeChart] = useState(false);
+  const [appliedSize, setAppliedSize] = useState(null);
 
   // Profile state
   const [profiles, setProfiles] = useState([]);
@@ -94,7 +98,7 @@ function MeasurementForm() {
     );
   });
 
-  // ── Apply saved profile ──────────────────────────────────────────────────
+  // ── Apply saved profile (SCRUM-32) ──────────────────────────────────────
 
   const applyProfile = (profile) => {
     const newValues = {};
@@ -107,13 +111,11 @@ function MeasurementForm() {
     });
     setValues(newValues);
     setErrors({});
-    if (profile.measurements.fitPreference) setFitPreference(profile.measurements.fitPreference);
+    if (profile.measurements.fitPreference) { setFitPreference(profile.measurements.fitPreference); }
   };
 
-  // ── Save as profile ──────────────────────────────────────────────────────
-
   const handleSaveProfile = async () => {
-    if (!profileName.trim()) return;
+    if (!profileName.trim()) { return; }
     setSavingProfile(true);
     try {
       const jacketVals = {};
@@ -130,10 +132,25 @@ function MeasurementForm() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch {
-      // noop — keep form open on error
+      // noop
     } finally {
       setSavingProfile(false);
     }
+  };
+
+  // ── Standard size apply handler (SCRUM-33) ───────────────────────────────
+
+  const handleApplyStandardSize = (sizeKey) => {
+    const sizeData = STANDARD_SIZES[sizeKey];
+    const newValues = {};
+    [...JACKET_FIELDS, ...TROUSER_FIELDS].forEach((f) => {
+      newValues[f.id] = String(sizeData[f.id]);
+    });
+    setValues(newValues);
+    setErrors({});
+    setUnit('cm');
+    setAppliedSize(sizeKey);
+    setShowSizeChart(false);
   };
 
   // ── Save handler ─────────────────────────────────────────────────────────
@@ -143,17 +160,44 @@ function MeasurementForm() {
     JACKET_FIELDS.forEach((f) => { jacketVals[f.id] = toCm(parseFloat(values[f.id]), unit); });
     const trouserVals = {};
     TROUSER_FIELDS.forEach((f) => { trouserVals[f.id] = toCm(parseFloat(values[f.id]), unit); });
-    setMeasurements({ unit: 'cm', fitPreference, jacket: jacketVals, trousers: trouserVals });
+    const measurementType = appliedSize ? 'standard' : 'custom';
+    setMeasurements({ unit: 'cm', fitPreference, jacket: jacketVals, trousers: trouserVals, measurementType });
   };
 
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-8">
-      <p className="text-gray-500 text-sm">
-        Enter your body measurements below for a perfectly tailored fit.
-        All values are stored in cm internally.
-      </p>
+      {showSizeChart && (
+        <SizeChartModal
+          onApply={handleApplyStandardSize}
+          onClose={() => setShowSizeChart(false)}
+        />
+      )}
+
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <p className="text-gray-500 text-sm">
+          Enter your body measurements below for a perfectly tailored fit.
+          All values are stored in cm internally.
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowSizeChart(true)}
+          className="flex-shrink-0 px-4 py-2 rounded-lg border border-indigo-300 bg-indigo-50 text-indigo-700 text-sm font-medium hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+        >
+          Use Standard Size
+        </button>
+      </div>
+
+      {/* Applied standard size notice */}
+      {appliedSize && (
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Standard {appliedSize} applied — for best fit, provide custom measurements next time.
+        </div>
+      )}
 
       {/* ── Use Saved Profile section ─────────────────────────────────────── */}
       {isAuthenticated && profiles.length > 0 && (

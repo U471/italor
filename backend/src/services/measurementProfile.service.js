@@ -47,7 +47,7 @@ const deleteProfile = async (userId, profileId) => {
   // If deleted profile was default, set newest remaining as default
   if (profile.isDefault) {
     const next = await MeasurementProfile.findOne({ userId }).sort({ createdAt: -1 });
-    if (next) await MeasurementProfile.findByIdAndUpdate(next._id, { isDefault: true });
+    if (next) { await MeasurementProfile.findByIdAndUpdate(next._id, { isDefault: true }); }
   }
   return profile;
 };

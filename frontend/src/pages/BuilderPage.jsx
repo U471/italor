@@ -5,6 +5,7 @@ import StepProgress from '../components/StepProgress/StepProgress';
 import StyleStep from '../components/StyleStep/StyleStep';
 import LapelStep from '../components/LapelStep/LapelStep';
 import LiningStep from '../components/LiningStep/LiningStep';
+import DetailsStep from '../components/DetailsStep/DetailsStep';
 import { getFabricById } from '../services/api';
 
 /**
@@ -94,7 +95,7 @@ function BuilderPage() {
           {stepId === 'style' && <StyleStep />}
           {stepId === 'lapel' && <LapelStep />}
           {stepId === 'lining' && <LiningStep />}
-          {stepId === 'details' && <PlaceholderStep label="Details" next="SCRUM-27" />}
+          {stepId === 'details' && <DetailsStep />}
           {stepId === 'monogram' && <PlaceholderStep label="Monogram" next="SCRUM-28" />}
           {stepId === 'review' && <ReviewStep config={config} />}
         </section>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import useAuthStore from '../store/authStore';
 
 /**
  * Axios instance pre-configured for the iTailor API.
@@ -16,15 +17,9 @@ const api = axios.create({
 // ── Request interceptor — attach JWT from Zustand store if present ─────────────
 api.interceptors.request.use(
   (config) => {
-    // Dynamically read from Zustand store to always get the latest token
-    try {
-      const { useAuthStore } = require('../store/authStore');
-      const token = useAuthStore.getState().accessToken;
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch {
-      // Store not yet initialized — skip
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -159,6 +154,29 @@ export async function updateAvatar(formData) {
   const { data } = await api.put('/api/v1/user/me/avatar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+  return data;
+}
+
+// ── Fabric catalog endpoints ──────────────────────────────────────────────────
+
+/**
+ * Fetches paginated fabric catalog with optional filters/search/sort.
+ *
+ * @param {URLSearchParams|object} params
+ * @returns {Promise<{ fabrics: object[], total: number, page: number, pages: number, limit: number }>}
+ */
+export async function getFabrics(params) {
+  const { data } = await api.get('/api/v1/products', { params });
+  return data;
+}
+
+/**
+ * Returns distinct values for filter sidebar (materials, colors, patterns).
+ *
+ * @returns {Promise<{ materials: string[], colors: string[], patterns: string[] }>}
+ */
+export async function getFabricFilters() {
+  const { data } = await api.get('/api/v1/products/filters');
   return data;
 }
 

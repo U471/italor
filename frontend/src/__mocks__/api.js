@@ -20,4 +20,6 @@ export const getMe = jest.fn();
 export const updateMe = jest.fn();
 export const updatePassword = jest.fn();
 export const updateAvatar = jest.fn();
+export const getFabrics = jest.fn();
+export const getFabricFilters = jest.fn();
 export default api;

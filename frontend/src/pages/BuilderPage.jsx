@@ -6,6 +6,7 @@ import StyleStep from '../components/StyleStep/StyleStep';
 import LapelStep from '../components/LapelStep/LapelStep';
 import LiningStep from '../components/LiningStep/LiningStep';
 import DetailsStep from '../components/DetailsStep/DetailsStep';
+import MonogramStep from '../components/MonogramStep/MonogramStep';
 import { getFabricById } from '../services/api';
 
 /**
@@ -96,7 +97,7 @@ function BuilderPage() {
           {stepId === 'lapel' && <LapelStep />}
           {stepId === 'lining' && <LiningStep />}
           {stepId === 'details' && <DetailsStep />}
-          {stepId === 'monogram' && <PlaceholderStep label="Monogram" next="SCRUM-28" />}
+          {stepId === 'monogram' && <MonogramStep />}
           {stepId === 'review' && <ReviewStep config={config} />}
         </section>
 
@@ -177,19 +178,6 @@ function FabricStep({ fabric, fabricId }) {
       >
         Browse Fabrics
       </Link>
-    </div>
-  );
-}
-
-function PlaceholderStep({ label, next }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-4">
-        <span className="text-2xl">✂️</span>
-      </div>
-      <p className="text-gray-500 text-sm">
-        <strong>{label}</strong> configuration coming in {next}.
-      </p>
     </div>
   );
 }

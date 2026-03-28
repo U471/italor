@@ -8,6 +8,7 @@ import {
 } from '../../constants/measurementFields';
 import { STANDARD_SIZES } from '../../constants/standardSizes';
 import SizeChartModal from '../SizeChartModal/SizeChartModal';
+import { getProfiles, saveProfile } from '../../services/measurement.service';
 
 /**
  * MeasurementForm — SCRUM-31 / SCRUM-32
@@ -97,7 +98,47 @@ function MeasurementForm() {
     );
   });
 
-  // ── Standard size apply handler ──────────────────────────────────────────
+  // ── Apply saved profile (SCRUM-32) ──────────────────────────────────────
+
+  const applyProfile = (profile) => {
+    const newValues = {};
+    allFields.forEach((f) => {
+      const section = JACKET_FIELDS.find((jf) => jf.id === f.id) ? 'jacket' : 'trousers';
+      const cmVal = profile.measurements[section]?.[f.id];
+      if (cmVal !== undefined) {
+        newValues[f.id] = unit === 'inches' ? (cmVal / 2.54).toFixed(1) : cmVal.toString();
+      }
+    });
+    setValues(newValues);
+    setErrors({});
+    if (profile.measurements.fitPreference) { setFitPreference(profile.measurements.fitPreference); }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!profileName.trim()) { return; }
+    setSavingProfile(true);
+    try {
+      const jacketVals = {};
+      JACKET_FIELDS.forEach((f) => { jacketVals[f.id] = toCm(parseFloat(values[f.id]), unit); });
+      const trouserVals = {};
+      TROUSER_FIELDS.forEach((f) => { trouserVals[f.id] = toCm(parseFloat(values[f.id]), unit); });
+      const res = await saveProfile({
+        name: profileName.trim(),
+        measurements: { jacket: jacketVals, trousers: trouserVals, fitPreference },
+      });
+      setProfiles((prev) => [res.data.data.profile, ...prev]);
+      setProfileName('');
+      setShowSaveForm(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch {
+      // noop
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  // ── Standard size apply handler (SCRUM-33) ───────────────────────────────
 
   const handleApplyStandardSize = (sizeKey) => {
     const sizeData = STANDARD_SIZES[sizeKey];

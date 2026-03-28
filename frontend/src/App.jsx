@@ -10,6 +10,7 @@ import FabricDetailPage from './pages/FabricDetailPage';
 import AdminFabricPage from './pages/admin/AdminFabricPage';
 import BuilderPage from './pages/BuilderPage';
 import MyDesignsPage from './pages/MyDesignsPage';
+import MyMeasurementsPage from './pages/MyMeasurementsPage';
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
@@ -57,6 +58,14 @@ function App() {
           element={
             <ProtectedRoute isLoading={isLoading}>
               <MyDesignsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/measurements"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <MyMeasurementsPage />
             </ProtectedRoute>
           }
         />

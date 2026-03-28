@@ -5,8 +5,15 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 jest.mock('../services/api', () => ({
   getFabricById: jest.fn(),
 }));
+jest.mock('../store/authStore', () => ({ __esModule: true, default: jest.fn() }));
+jest.mock('../services/measurement.service', () => ({
+  getProfiles: jest.fn().mockResolvedValue({ data: { data: { profiles: [] } } }),
+  saveProfile: jest.fn(),
+}));
 
 import { getFabricById } from '../services/api';
+import useAuthStore from '../store/authStore';
+
 import BuilderPage from './BuilderPage';
 
 const MOCK_FABRIC = {
@@ -31,6 +38,7 @@ function renderBuilder(path = '/builder') {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  useAuthStore.mockReturnValue({ accessToken: null });
 });
 
 describe('BuilderPage', () => {

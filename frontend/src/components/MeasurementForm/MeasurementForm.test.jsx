@@ -3,7 +3,14 @@ import { MemoryRouter } from 'react-router-dom';
 import MeasurementForm from './MeasurementForm';
 
 jest.mock('../../store/suitStore', () => ({ __esModule: true, default: jest.fn() }));
+jest.mock('../../store/authStore', () => ({ __esModule: true, default: jest.fn() }));
+jest.mock('../../services/measurement.service', () => ({
+  getProfiles: jest.fn().mockResolvedValue({ data: { data: { profiles: [] } } }),
+  saveProfile: jest.fn(),
+}));
+
 import useSuitStore from '../../store/suitStore';
+import useAuthStore from '../../store/authStore';
 
 const mockSetMeasurements = jest.fn();
 
@@ -12,6 +19,9 @@ function renderForm(measurementsOverride = null) {
     config: { measurements: measurementsOverride },
     setMeasurements: mockSetMeasurements,
   });
+  useAuthStore.mockImplementation((selector) =>
+    selector ? selector({ accessToken: null }) : { accessToken: null }
+  );
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <MeasurementForm />

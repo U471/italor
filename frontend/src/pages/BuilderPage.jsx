@@ -7,6 +7,7 @@ import LapelStep from '../components/LapelStep/LapelStep';
 import LiningStep from '../components/LiningStep/LiningStep';
 import DetailsStep from '../components/DetailsStep/DetailsStep';
 import MonogramStep from '../components/MonogramStep/MonogramStep';
+import SuitPreviewPanel from '../components/SuitPreviewPanel/SuitPreviewPanel';
 import { getFabricById } from '../services/api';
 
 /**
@@ -72,7 +73,7 @@ function BuilderPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Step progress bar */}
         <div className="mb-10">
           <StepProgress
@@ -83,51 +84,64 @@ function BuilderPage() {
           />
         </div>
 
-        {/* Step content */}
-        <section
-          aria-label={`Step ${currentStep + 1}: ${BUILDER_STEPS[currentStep].label}`}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 min-h-[320px]"
-        >
-          <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">
-            {BUILDER_STEPS[currentStep].label}
-          </h2>
+        {/* Mobile compact preview thumbnail */}
+        <SuitPreviewPanel currentStep={currentStep + 1} compact={true} />
 
-          {stepId === 'fabric' && <FabricStep fabric={config.fabric} fabricId={fabricId} />}
-          {stepId === 'style' && <StyleStep />}
-          {stepId === 'lapel' && <LapelStep />}
-          {stepId === 'lining' && <LiningStep />}
-          {stepId === 'details' && <DetailsStep />}
-          {stepId === 'monogram' && <MonogramStep />}
-          {stepId === 'review' && <ReviewStep config={config} />}
-        </section>
-
-        {/* Navigation */}
-        <div className="mt-6 flex justify-between">
-          <button
-            type="button"
-            onClick={goPrev}
-            disabled={isFirst}
-            className="px-6 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            ← Previous
-          </button>
-
-          {isLast ? (
-            <button
-              type="button"
-              className="px-8 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors"
+        {/* Two-column layout: step content + live preview panel */}
+        <div className="flex gap-8 items-start">
+          {/* Left: step content */}
+          <div className="flex-1 min-w-0">
+            <section
+              aria-label={`Step ${currentStep + 1}: ${BUILDER_STEPS[currentStep].label}`}
+              className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 min-h-[320px]"
             >
-              Add to Cart
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={goNext}
-              className="px-6 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors"
-            >
-              Next →
-            </button>
-          )}
+              <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">
+                {BUILDER_STEPS[currentStep].label}
+              </h2>
+
+              {stepId === 'fabric' && <FabricStep fabric={config.fabric} fabricId={fabricId} />}
+              {stepId === 'style' && <StyleStep />}
+              {stepId === 'lapel' && <LapelStep />}
+              {stepId === 'lining' && <LiningStep />}
+              {stepId === 'details' && <DetailsStep />}
+              {stepId === 'monogram' && <MonogramStep />}
+              {stepId === 'review' && <ReviewStep config={config} />}
+            </section>
+
+            {/* Navigation */}
+            <div className="mt-6 flex justify-between">
+              <button
+                type="button"
+                onClick={goPrev}
+                disabled={isFirst}
+                className="px-6 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                ← Previous
+              </button>
+
+              {isLast ? (
+                <button
+                  type="button"
+                  className="px-8 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors"
+                >
+                  Add to Cart
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="px-6 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors"
+                >
+                  Next →
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Right: live preview panel (desktop only) */}
+          <div className="w-72 flex-shrink-0">
+            <SuitPreviewPanel currentStep={currentStep + 1} />
+          </div>
         </div>
       </main>
     </div>

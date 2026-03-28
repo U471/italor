@@ -14,6 +14,7 @@ const fabricRouter = require('./routes/fabric.routes');
 const adminRouter = require('./routes/admin.routes');
 const designRouter = require('./routes/design.routes');
 const savedDesignRouter = require('./routes/savedDesign.routes');
+const sizeChartRouter = require('./routes/sizeChart.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFoundHandler } = require('./middleware/notFoundHandler');
 
@@ -74,6 +75,7 @@ app.use('/api/v1/products', fabricRouter);
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/designs', designRouter);
 app.use('/api/v1/saved-designs', savedDesignRouter);
+app.use('/api/v1/size-chart', sizeChartRouter);
 
 // ── 404 + Error handlers ─────────────────────────────────────────────────────
 app.use(notFoundHandler);

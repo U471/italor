@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import MeasurementForm from './MeasurementForm';
 
@@ -61,6 +61,41 @@ describe('MeasurementForm', () => {
     fireEvent.change(chestInput, { target: { value: '300' } });
     fireEvent.blur(chestInput);
     expect(screen.getByText(/Please enter a value between/i)).toBeInTheDocument();
+  });
+
+  it('opens SizeChartModal when "Use Standard Size" is clicked', () => {
+    renderForm();
+    fireEvent.click(screen.getByRole('button', { name: /use standard size/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Select Standard Size')).toBeInTheDocument();
+  });
+
+  it('applies standard size and pre-fills fields', async () => {
+    renderForm();
+    fireEvent.click(screen.getByRole('button', { name: /use standard size/i }));
+    // Select L in the grid (first occurrence is the size button)
+    const sizeButtons = screen.getAllByRole('button', { name: /^L$/i });
+    fireEvent.click(sizeButtons[0]);
+    fireEvent.click(screen.getByRole('button', { name: /apply size L/i }));
+    // Modal should close, size notice shown
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByText(/standard L applied/i)).toBeInTheDocument();
+  });
+
+  it('calls setMeasurements with measurementType standard after applying size', async () => {
+    renderForm();
+    // Apply L size
+    fireEvent.click(screen.getByRole('button', { name: /use standard size/i }));
+    const sizeButtons = screen.getAllByRole('button', { name: /^L$/i });
+    fireEvent.click(sizeButtons[0]);
+    fireEvent.click(screen.getByRole('button', { name: /apply size L/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    // Now save
+    const saveBtn = screen.getByRole('button', { name: /save measurements/i });
+    fireEvent.click(saveBtn);
+    expect(mockSetMeasurements).toHaveBeenCalledWith(
+      expect.objectContaining({ measurementType: 'standard' })
+    );
   });
 
   it('calls setMeasurements when Save is clicked with valid data', () => {

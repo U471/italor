@@ -54,6 +54,11 @@ const fabricSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     isActive: {
       type: Boolean,
       default: true,

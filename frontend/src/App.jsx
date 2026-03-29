@@ -16,8 +16,12 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminOrdersPage from './pages/admin/AdminOrdersPage';
+import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage';
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute/AdminRoute';
 import useAuth from './hooks/useAuth';
 
 /**
@@ -121,11 +125,36 @@ function App() {
         <Route
           path="/admin/fabrics"
           element={
-            <ProtectedRoute isLoading={isLoading}>
+            <AdminRoute isLoading={isLoading}>
               <AdminFabricPage />
-            </ProtectedRoute>
+            </AdminRoute>
           }
         />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute isLoading={isLoading}>
+              <AdminDashboardPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <AdminRoute isLoading={isLoading}>
+              <AdminOrdersPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/orders/:orderId"
+          element={
+            <AdminRoute isLoading={isLoading}>
+              <AdminOrderDetailPage />
+            </AdminRoute>
+          }
+        />
+        <Route path="/403" element={<ForbiddenPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
@@ -162,6 +191,22 @@ function NotFoundPage() {
     <main className="flex flex-col items-center justify-center min-h-screen px-4 text-center">
       <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
       <p className="text-lg text-gray-600 mb-8">Page not found.</p>
+      <a
+        href="/"
+        className="px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
+      >
+        Go home
+      </a>
+    </main>
+  );
+}
+
+function ForbiddenPage() {
+  return (
+    <main className="flex flex-col items-center justify-center min-h-screen px-4 text-center">
+      <h1 className="text-6xl font-bold text-gray-900 mb-4">403</h1>
+      <p className="text-lg text-gray-600 mb-2">Access Forbidden</p>
+      <p className="text-sm text-gray-500 mb-8">You don't have permission to view this page.</p>
       <a
         href="/"
         className="px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"

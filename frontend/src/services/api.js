@@ -357,9 +357,19 @@ export async function createReview(fabricId, payload) {
 // ── Admin order endpoints ─────────────────────────────────────────────────────
 
 /**
+ * Admin: returns aggregated dashboard statistics.
+ *
+ * @returns {Promise<object>}
+ */
+export async function adminGetStats() {
+  const { data } = await api.get('/api/v1/admin/stats');
+  return data;
+}
+
+/**
  * Admin: lists all orders with optional filters.
  *
- * @param {{ page?: number, limit?: number, status?: string, search?: string }} params
+ * @param {{ page?: number, limit?: number, status?: string }} params
  * @returns {Promise<{ orders: object[], total: number, page: number, pages: number }>}
  */
 export async function adminGetOrders(params) {
@@ -368,14 +378,37 @@ export async function adminGetOrders(params) {
 }
 
 /**
- * Admin: updates the status of an order.
+ * Admin: returns full detail for a single order including populated user info.
  *
  * @param {string} orderId
- * @param {{ status: string, note?: string }} payload
+ * @returns {Promise<{ order: object }>}
+ */
+export async function adminGetOrderDetail(orderId) {
+  const { data } = await api.get(`/api/v1/admin/orders/${orderId}`);
+  return data;
+}
+
+/**
+ * Admin: updates the status of an order.
+ * When status is 'shipped', trackingNumber and carrier are required.
+ *
+ * @param {string} orderId
+ * @param {{ status: string, trackingNumber?: string, carrier?: string, note?: string }} payload
  * @returns {Promise<{ order: object }>}
  */
 export async function adminUpdateOrderStatus(orderId, payload) {
   const { data } = await api.patch(`/api/v1/admin/orders/${orderId}/status`, payload);
+  return data;
+}
+
+/**
+ * Admin: processes a Stripe refund for a cancelled order.
+ *
+ * @param {string} orderId
+ * @returns {Promise<{ order: object }>}
+ */
+export async function adminProcessRefund(orderId) {
+  const { data } = await api.post(`/api/v1/admin/orders/${orderId}/refund`);
   return data;
 }
 

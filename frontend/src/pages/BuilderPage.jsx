@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import useSuitStore, { BUILDER_STEPS } from '../store/suitStore';
 import useAuthStore from '../store/authStore';
+import useCartStore from '../store/cartStore';
 import StepProgress from '../components/StepProgress/StepProgress';
 import StyleStep from '../components/StyleStep/StyleStep';
 import LapelStep from '../components/LapelStep/LapelStep';
@@ -11,6 +12,7 @@ import MonogramStep from '../components/MonogramStep/MonogramStep';
 import MeasurementForm from '../components/MeasurementForm/MeasurementForm';
 import SuitPreviewPanel from '../components/SuitPreviewPanel/SuitPreviewPanel';
 import SaveDesignButton from '../components/SaveDesignButton/SaveDesignButton';
+import CartDrawer from '../components/CartDrawer/CartDrawer';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { getFabricById } from '../services/api';
 
@@ -34,6 +36,8 @@ function BuilderPage() {
     isStepComplete,
     reset,
   } = useSuitStore();
+
+  const { addItem } = useCartStore();
 
   const { accessToken } = useAuthStore();
   const isAuthenticated = Boolean(accessToken);
@@ -71,6 +75,7 @@ function BuilderPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <CartDrawer />
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
@@ -134,6 +139,7 @@ function BuilderPage() {
               {isLast ? (
                 <button
                   type="button"
+                  onClick={() => addItem(config)}
                   className="px-8 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors"
                 >
                   Add to Cart

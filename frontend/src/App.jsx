@@ -14,6 +14,8 @@ import MyMeasurementsPage from './pages/MyMeasurementsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
@@ -67,6 +69,33 @@ function App() {
           element={
             <ProtectedRoute isLoading={isLoading}>
               <OrderConfirmationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/orders"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <MyOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/orders/:orderId"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <OrderDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/orders/:orderId/review"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              {/* Review page — implemented in SCRUM-44 */}
+              <div className="max-w-lg mx-auto px-4 py-16 text-center">
+                <p className="text-gray-500">Review form coming soon.</p>
+              </div>
             </ProtectedRoute>
           }
         />

@@ -12,6 +12,7 @@ import BuilderPage from './pages/BuilderPage';
 import MyDesignsPage from './pages/MyDesignsPage';
 import MyMeasurementsPage from './pages/MyMeasurementsPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
@@ -52,6 +53,14 @@ function App() {
           }
         />
         <Route path="/cart" element={<CartPage />} />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/fabrics" element={<FabricCatalogPage />} />
         <Route path="/fabrics/:id" element={<FabricDetailPage />} />
         <Route path="/builder" element={<BuilderPage />} />

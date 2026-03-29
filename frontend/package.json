@@ -72,7 +72,8 @@
       "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/src/__mocks__/fileMock.cjs",
       "^.+/services/api(\\.js)?$": "<rootDir>/src/__mocks__/api.js",
       "^.+/services/design\\.service(\\.js)?$": "<rootDir>/src/__mocks__/design.service.js",
-      "^.+/services/measurement\\.service(\\.js)?$": "<rootDir>/src/__mocks__/measurement.service.js"
+      "^.+/services/measurement\\.service(\\.js)?$": "<rootDir>/src/__mocks__/measurement.service.js",
+      "^.+/services/cart\\.service(\\.js)?$": "<rootDir>/src/__mocks__/cart.service.js"
     },
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",

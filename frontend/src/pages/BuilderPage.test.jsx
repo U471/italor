@@ -10,9 +10,11 @@ jest.mock('../services/measurement.service', () => ({
   getProfiles: jest.fn().mockResolvedValue({ data: { data: { profiles: [] } } }),
   saveProfile: jest.fn(),
 }));
+jest.mock('../store/cartStore', () => ({ __esModule: true, default: jest.fn() }));
 
 import { getFabricById } from '../services/api';
 import useAuthStore from '../store/authStore';
+import useCartStore from '../store/cartStore';
 
 import BuilderPage from './BuilderPage';
 
@@ -36,11 +38,17 @@ function renderBuilder(path = '/builder') {
   );
 }
 
+const mockAddItem = jest.fn();
+
 beforeEach(() => {
   jest.clearAllMocks();
   useAuthStore.mockImplementation((selector) =>
     selector ? selector({ accessToken: null }) : { accessToken: null }
   );
+  useCartStore.mockImplementation((selector) => {
+    const state = { items: [], isOpen: false, addItem: mockAddItem, closeDrawer: jest.fn() };
+    return selector ? selector(state) : state;
+  });
 });
 
 describe('BuilderPage', () => {
@@ -144,5 +152,17 @@ describe('BuilderPage', () => {
   it('renders iTailor home link in header', () => {
     renderBuilder();
     expect(screen.getByRole('link', { name: 'iTailor' })).toHaveAttribute('href', '/');
+  });
+
+  it('calls addItem with config when Add to Cart is clicked on last step', async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+
+    for (let i = 0; i < 7; i++) {
+      await user.click(screen.getByRole('button', { name: /next →/i }));
+    }
+
+    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+    expect(mockAddItem).toHaveBeenCalledTimes(1);
   });
 });

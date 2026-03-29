@@ -13,6 +13,7 @@ import MyDesignsPage from './pages/MyDesignsPage';
 import MyMeasurementsPage from './pages/MyMeasurementsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './hooks/useAuth';
@@ -58,6 +59,14 @@ function App() {
           element={
             <ProtectedRoute isLoading={isLoading}>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:orderId/confirmation"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <OrderConfirmationPage />
             </ProtectedRoute>
           }
         />

@@ -52,4 +52,20 @@ async function mergeGuestCart(userId, guestItems) {
   return cart;
 }
 
-module.exports = { getCart, addItem, updateQuantity, removeItem, mergeGuestCart };
+/**
+ * Clears all items from the user's cart.
+ * Called after successful payment to empty the cart.
+ *
+ * @param {string} userId
+ * @returns {Promise<object>} Updated cart document
+ */
+async function clearCart(userId) {
+  const cart = await Cart.findOneAndUpdate(
+    { user: userId },
+    { $set: { items: [] } },
+    { new: true, upsert: true }
+  );
+  return cart;
+}
+
+module.exports = { getCart, addItem, updateQuantity, removeItem, mergeGuestCart, clearCart };

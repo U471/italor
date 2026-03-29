@@ -19,6 +19,8 @@ const measurementProfileRouter = require('./routes/measurementProfile.routes');
 const cartRouter = require('./routes/cart.routes');
 const promoRouter = require('./routes/promo.routes');
 const checkoutRouter = require('./routes/checkout.routes');
+const paymentRouter = require('./routes/payment.routes');
+const webhookRouter = require('./routes/webhook.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFoundHandler } = require('./middleware/notFoundHandler');
 
@@ -48,6 +50,11 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// ── Stripe webhook — MUST be registered before express.json() ───────────────
+// The webhook handler uses express.raw() per-route so Stripe can verify the
+// request signature against the unparsed body buffer.
+app.use('/api/v1/webhooks', webhookRouter);
 
 // ── Request parsing ──────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
@@ -84,6 +91,7 @@ app.use('/api/v1/measurements', measurementProfileRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/promo', promoRouter);
 app.use('/api/v1/checkout', checkoutRouter);
+app.use('/api/v1/payments', paymentRouter);
 
 // ── 404 + Error handlers ─────────────────────────────────────────────────────
 app.use(notFoundHandler);

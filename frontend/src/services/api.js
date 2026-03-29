@@ -269,4 +269,114 @@ export async function listMyDesigns() {
   return data;
 }
 
+// ── Checkout endpoints ────────────────────────────────────────────────────────
+
+/**
+ * Validates the current cart and returns a server-computed pricing summary.
+ *
+ * @param {{ shippingRegion: string, promoCode?: string }} payload
+ * @returns {Promise<object>}
+ */
+export async function validateCheckout(payload) {
+  const { data } = await api.post('/api/v1/checkout/validate', payload);
+  return data;
+}
+
+/**
+ * Creates a pending order from the user's cart.
+ *
+ * @param {{ shippingAddress: object, shippingRegion: string, promoCode?: string }} payload
+ * @returns {Promise<{ order: object }>}
+ */
+export async function createOrder(payload) {
+  const { data } = await api.post('/api/v1/checkout/orders', payload);
+  return data;
+}
+
+/**
+ * Retrieves a single order scoped to the authenticated user.
+ *
+ * @param {string} orderId
+ * @returns {Promise<{ order: object }>}
+ */
+export async function getOrder(orderId) {
+  const { data } = await api.get(`/api/v1/checkout/orders/${orderId}`);
+  return data;
+}
+
+/**
+ * Creates a Stripe PaymentIntent for a pending order.
+ * Returns { clientSecret, paymentIntentId } to initialise Stripe Elements.
+ *
+ * @param {string} orderId
+ * @returns {Promise<{ clientSecret: string, paymentIntentId: string }>}
+ */
+export async function createPaymentIntent(orderId) {
+  const { data } = await api.post(`/api/v1/payments/${orderId}/create-intent`);
+  return data;
+}
+
+// ── Order history endpoints ───────────────────────────────────────────────────
+
+/**
+ * Lists the authenticated user's orders with optional pagination.
+ *
+ * @param {{ page?: number, limit?: number, status?: string }} params
+ * @returns {Promise<{ orders: object[], total: number, page: number, pages: number }>}
+ */
+export async function getMyOrders(params) {
+  const { data } = await api.get('/api/v1/orders', { params });
+  return data;
+}
+
+/**
+ * Retrieves full detail for a single order.
+ *
+ * @param {string} orderId
+ * @returns {Promise<{ order: object }>}
+ */
+export async function getOrderDetail(orderId) {
+  const { data } = await api.get(`/api/v1/orders/${orderId}`);
+  return data;
+}
+
+// ── Review endpoints ──────────────────────────────────────────────────────────
+
+/**
+ * Creates a review for a fabric (requires a completed order containing that fabric).
+ *
+ * @param {string} fabricId
+ * @param {{ rating: number, title?: string, body?: string, fitRating?: number }} payload
+ * @returns {Promise<{ review: object }>}
+ */
+export async function createReview(fabricId, payload) {
+  const { data } = await api.post(`/api/v1/products/${fabricId}/reviews`, payload);
+  return data;
+}
+
+// ── Admin order endpoints ─────────────────────────────────────────────────────
+
+/**
+ * Admin: lists all orders with optional filters.
+ *
+ * @param {{ page?: number, limit?: number, status?: string, search?: string }} params
+ * @returns {Promise<{ orders: object[], total: number, page: number, pages: number }>}
+ */
+export async function adminGetOrders(params) {
+  const { data } = await api.get('/api/v1/admin/orders', { params });
+  return data;
+}
+
+/**
+ * Admin: updates the status of an order.
+ *
+ * @param {string} orderId
+ * @param {{ status: string, note?: string }} payload
+ * @returns {Promise<{ order: object }>}
+ */
+export async function adminUpdateOrderStatus(orderId, payload) {
+  const { data } = await api.patch(`/api/v1/admin/orders/${orderId}/status`, payload);
+  return data;
+}
+
 export default api;

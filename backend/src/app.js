@@ -18,6 +18,7 @@ const sizeChartRouter = require('./routes/sizeChart.routes');
 const measurementProfileRouter = require('./routes/measurementProfile.routes');
 const cartRouter = require('./routes/cart.routes');
 const promoRouter = require('./routes/promo.routes');
+const checkoutRouter = require('./routes/checkout.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFoundHandler } = require('./middleware/notFoundHandler');
 
@@ -82,6 +83,7 @@ app.use('/api/v1/size-chart', sizeChartRouter);
 app.use('/api/v1/measurements', measurementProfileRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/promo', promoRouter);
+app.use('/api/v1/checkout', checkoutRouter);
 
 // ── 404 + Error handlers ─────────────────────────────────────────────────────
 app.use(notFoundHandler);

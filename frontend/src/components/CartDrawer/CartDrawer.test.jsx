@@ -137,9 +137,9 @@ describe('CartDrawer', () => {
     expect(screen.getAllByText('£600').length).toBeGreaterThan(0);
   });
 
-  it('shows Proceed to Checkout button as disabled', () => {
+  it('shows View Cart link when items are present', () => {
     renderDrawer({ items: [MOCK_ITEM] });
-    expect(screen.getByRole('button', { name: /proceed to checkout/i })).toBeDisabled();
+    expect(screen.getByRole('link', { name: /view cart/i })).toBeInTheDocument();
   });
 
   it('shows item count in drawer heading', () => {

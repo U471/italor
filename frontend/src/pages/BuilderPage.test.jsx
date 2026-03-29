@@ -51,6 +51,9 @@ beforeEach(() => {
   });
 });
 
+// Multi-step navigation tests click 7 times; coverage instrumentation slows renders
+jest.setTimeout(20000);
+
 describe('BuilderPage', () => {
   it('renders the configurator heading', () => {
     renderBuilder();

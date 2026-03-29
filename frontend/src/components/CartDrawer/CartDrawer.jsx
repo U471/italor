@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useCartStore from '../../store/cartStore';
 import useSuitStore from '../../store/suitStore';
 
@@ -84,13 +84,13 @@ function CartDrawer() {
               <span>Subtotal</span>
               <span>£{subtotal.toLocaleString()}</span>
             </div>
-            <button
-              type="button"
-              disabled
-              className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            <Link
+              to="/cart"
+              onClick={closeDrawer}
+              className="block w-full py-3 bg-brand-600 text-white rounded-lg font-medium text-center hover:bg-brand-700 transition-colors"
             >
-              Proceed to Checkout
-            </button>
+              View Cart
+            </Link>
             <button
               type="button"
               onClick={closeDrawer}

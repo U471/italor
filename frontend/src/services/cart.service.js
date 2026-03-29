@@ -19,3 +19,7 @@ export function removeCartItem(cartItemId) {
 export function mergeCart(items) {
   return api.post('/api/v1/cart/merge', { items });
 }
+
+export function validatePromo(code, cartTotal) {
+  return api.post('/api/v1/promo/validate', { code, cartTotal });
+}

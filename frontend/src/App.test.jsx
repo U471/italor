@@ -8,6 +8,15 @@ jest.mock('./services/measurement.service', () => ({
   updateProfile: jest.fn(),
   deleteProfile: jest.fn(),
 }));
+jest.mock('./services/cart.service', () => ({
+  getCart: jest.fn(),
+  addCartItem: jest.fn(),
+  updateCartItem: jest.fn(),
+  removeCartItem: jest.fn(),
+  mergeCart: jest.fn(),
+  validatePromo: jest.fn(),
+}));
+jest.mock('./store/cartStore', () => ({ __esModule: true, default: jest.fn() }));
 
 
 import App from './App';

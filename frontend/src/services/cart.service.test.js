@@ -12,6 +12,7 @@ import {
   updateCartItem,
   removeCartItem,
   mergeCart,
+  validatePromo,
 } from './cart.service';
 
 beforeEach(() => jest.clearAllMocks());
@@ -42,5 +43,13 @@ describe('cart.service', () => {
     const items = [{ cartItemId: 'x', quantity: 1 }];
     mergeCart(items);
     expect(api.post).toHaveBeenCalledWith('/api/v1/cart/merge', { items });
+  });
+
+  it('validatePromo calls api.post with correct path and payload', () => {
+    validatePromo('SUIT20', 500);
+    expect(api.post).toHaveBeenCalledWith('/api/v1/promo/validate', {
+      code: 'SUIT20',
+      cartTotal: 500,
+    });
   });
 });

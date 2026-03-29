@@ -1,6 +1,9 @@
 'use strict';
 
 const paymentService = require('../services/payment.service');
+const { sendOrderConfirmationEmail } = require('../services/email.service');
+const Order = require('../models/Order');
+const User = require('../models/User');
 const logger = require('../utils/logger');
 
 /**
@@ -48,6 +51,28 @@ async function handleStripeWebhook(req, res) {
       case 'payment_intent.succeeded': {
         const order = await paymentService.handlePaymentSucceeded(event.data.object);
         logger.info(`Order ${order?.orderNumber} confirmed via webhook`);
+
+        // Send confirmation email asynchronously — do not block webhook response
+        if (order) {
+          setImmediate(async () => {
+            try {
+              const user = await User.findById(order.user).select('email firstName').lean();
+              if (user) {
+                // Re-fetch order with full data in case it was partially updated
+                const fullOrder = await Order.findById(order._id).lean();
+                await sendOrderConfirmationEmail({
+                  toEmail: user.email,
+                  firstName: user.firstName || 'Customer',
+                  order: fullOrder,
+                });
+                logger.info(`Confirmation email sent for order ${order.orderNumber} to ${user.email}`);
+              }
+            } catch (emailErr) {
+              // Non-fatal: log but don't re-throw (Stripe already got 200)
+              logger.error(`Failed to send confirmation email for order ${order.orderNumber}: ${emailErr.message}`);
+            }
+          });
+        }
         break;
       }
 

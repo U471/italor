@@ -1,7 +1,17 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
 import useCartStore, { SHIPPING_RATES, TAX_RATE_US } from '../store/cartStore';
-import { createOrder } from '../services/api';
+import { createOrder, createPaymentIntent } from '../services/api';
+
+// Initialise Stripe outside of render — singleton pattern required by Stripe docs
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 const COUNTRIES = [
   'United Kingdom',
@@ -48,10 +58,11 @@ function validateAddress(address) {
 }
 
 /**
- * Multi-step checkout page.
+ * Three-step checkout page.
  *
  * Step 1 — Shipping address form
- * Step 2 — Order review + place order
+ * Step 2 — Order review (confirm items, address, totals, estimated delivery)
+ * Step 3 — Stripe Payment Element (card input, pay button)
  */
 function CheckoutPage() {
   const navigate = useNavigate();
@@ -70,8 +81,12 @@ function CheckoutPage() {
   const [step, setStep] = useState(1);
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+
+  // Order created at end of Step 2 — needed for PaymentIntent
+  const [pendingOrder, setPendingOrder] = useState(null);
+  const [clientSecret, setClientSecret] = useState('');
+  const [creatingOrder, setCreatingOrder] = useState(false);
+  const [createOrderError, setCreateOrderError] = useState('');
 
   const subtotal = getSubtotal();
   const discount = getDiscount();
@@ -79,7 +94,7 @@ function CheckoutPage() {
   const tax = getTax();
   const total = getOrderTotal();
 
-  if (items.length === 0) {
+  if (items.length === 0 && !pendingOrder) {
     return (
       <main className="max-w-2xl mx-auto px-4 py-16 text-center">
         <h1 className="text-3xl font-serif font-bold text-gray-900 mb-4">Checkout</h1>
@@ -94,14 +109,14 @@ function CheckoutPage() {
     );
   }
 
-  /** Handle address field change and clear the individual field error. */
+  /** Handle address field change and clear individual field error. */
   function handleAddressChange(e) {
     const { name, value } = e.target;
     setAddress((prev) => ({ ...prev, [name]: value }));
     setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
   }
 
-  /** Validate address and advance to review step. */
+  /** Validate and advance from Step 1 to Step 2. */
   function handleContinueToReview(e) {
     e.preventDefault();
     const errors = validateAddress(address);
@@ -113,30 +128,46 @@ function CheckoutPage() {
     setStep(2);
   }
 
-  /** Place order — POST to backend. */
-  async function handlePlaceOrder() {
-    setSubmitting(true);
-    setSubmitError('');
+  /**
+   * Creates the pending order and fetches the Stripe clientSecret,
+   * then advances to Step 3 (payment).
+   */
+  async function handleProceedToPayment() {
+    setCreatingOrder(true);
+    setCreateOrderError('');
     try {
-      const result = await createOrder({
+      // Step A: create the pending order in our backend
+      const orderResult = await createOrder({
         shippingAddress: address,
         shippingRegion,
         promoCode: promoCode?.code || null,
       });
-      const order = result?.data?.order ?? result?.order ?? result;
-      clearCart();
-      navigate(`/orders/${order._id}/confirmation`, {
-        state: { order },
-        replace: true,
-      });
+      const order = orderResult?.data?.order ?? orderResult?.order ?? orderResult;
+      setPendingOrder(order);
+
+      // Step B: create a Stripe PaymentIntent for that order
+      const intentResult = await createPaymentIntent(order._id);
+      const secret = intentResult?.data?.clientSecret ?? intentResult?.clientSecret;
+      setClientSecret(secret);
+
+      setStep(3);
     } catch (err) {
-      setSubmitError(
-        err?.message || 'Failed to place your order. Please try again.'
+      setCreateOrderError(
+        err?.message || 'Failed to initialise payment. Please try again.'
       );
     } finally {
-      setSubmitting(false);
+      setCreatingOrder(false);
     }
   }
+
+  /** Called by the Stripe payment form on successful payment. */
+  const handlePaymentSuccess = useCallback(() => {
+    clearCart();
+    navigate(`/orders/${pendingOrder._id}/confirmation`, {
+      state: { order: pendingOrder },
+      replace: true,
+    });
+  }, [clearCart, navigate, pendingOrder]);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
@@ -161,11 +192,38 @@ function CheckoutPage() {
             <ReviewStep
               address={address}
               items={items}
+              total={total}
               onBack={() => setStep(1)}
-              onPlaceOrder={handlePlaceOrder}
-              submitting={submitting}
-              submitError={submitError}
+              onProceedToPayment={handleProceedToPayment}
+              submitting={creatingOrder}
+              submitError={createOrderError}
             />
+          )}
+
+          {step === 3 && clientSecret && (
+            <Elements
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: 'stripe',
+                  variables: { colorPrimary: '#1d4ed8', borderRadius: '8px' },
+                },
+              }}
+            >
+              <PaymentStep
+                order={pendingOrder}
+                total={total}
+                onBack={() => setStep(2)}
+                onSuccess={handlePaymentSuccess}
+              />
+            </Elements>
+          )}
+
+          {step === 3 && !clientSecret && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center">
+              <p className="text-gray-500">Initialising payment…</p>
+            </div>
           )}
         </div>
 
@@ -190,12 +248,12 @@ function CheckoutPage() {
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 /**
- * Two-step breadcrumb indicator.
+ * Three-step breadcrumb indicator.
  *
  * @param {{ currentStep: number }} props
  */
 function StepIndicator({ currentStep }) {
-  const steps = ['Shipping Address', 'Review & Pay'];
+  const steps = ['Shipping Address', 'Review Order', 'Payment'];
   return (
     <nav aria-label="Checkout steps" className="flex items-center gap-0 mt-4">
       {steps.map((label, idx) => {
@@ -231,7 +289,7 @@ function StepIndicator({ currentStep }) {
 }
 
 /**
- * Shipping address form.
+ * Shipping address form — Step 1.
  */
 function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
   return (
@@ -239,7 +297,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-6">Shipping Address</h2>
       <form onSubmit={onSubmit} noValidate>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {/* Full name — spans full width */}
           <div className="sm:col-span-2">
             <FormField
               label="Full Name"
@@ -251,8 +308,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
               autoComplete="name"
             />
           </div>
-
-          {/* Address line 1 — spans full width */}
           <div className="sm:col-span-2">
             <FormField
               label="Address Line 1"
@@ -265,8 +320,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
               placeholder="Street address, P.O. box"
             />
           </div>
-
-          {/* Address line 2 — spans full width */}
           <div className="sm:col-span-2">
             <FormField
               label="Address Line 2 (optional)"
@@ -277,7 +330,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
               placeholder="Apartment, suite, unit, building, floor"
             />
           </div>
-
           <FormField
             label="City"
             name="city"
@@ -287,7 +339,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
             required
             autoComplete="address-level2"
           />
-
           <FormField
             label="State / Province (optional)"
             name="state"
@@ -295,7 +346,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
             onChange={onChange}
             autoComplete="address-level1"
           />
-
           <FormField
             label="Postal Code"
             name="postalCode"
@@ -305,8 +355,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
             required
             autoComplete="postal-code"
           />
-
-          {/* Country select */}
           <div>
             <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
               Country <span className="text-red-500">*</span>
@@ -327,8 +375,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
               <p className="mt-1 text-xs text-red-600">{fieldErrors.country}</p>
             )}
           </div>
-
-          {/* Phone — spans full width */}
           <div className="sm:col-span-2">
             <FormField
               label="Phone (optional)"
@@ -341,7 +387,6 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
             />
           </div>
         </div>
-
         <div className="mt-6">
           <button
             type="submit"
@@ -358,17 +403,7 @@ function ShippingForm({ address, fieldErrors, onChange, onSubmit }) {
 /**
  * Generic labelled text input.
  */
-function FormField({
-  label,
-  name,
-  type = 'text',
-  value,
-  onChange,
-  error,
-  required,
-  autoComplete,
-  placeholder,
-}) {
+function FormField({ label, name, type = 'text', value, onChange, error, required, autoComplete, placeholder }) {
   return (
     <div>
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
@@ -386,10 +421,7 @@ function FormField({
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? `${name}-error` : undefined}
         className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors
-          ${error
-            ? 'border-red-400 focus:ring-red-400'
-            : 'border-gray-300 focus:ring-brand-500'
-          }`}
+          ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-brand-500'}`}
       />
       {error && (
         <p id={`${name}-error`} role="alert" className="mt-1 text-xs text-red-600">
@@ -401,20 +433,24 @@ function FormField({
 }
 
 /**
- * Order review step — shows address, items, and place-order button.
+ * Order review step — Step 2.
+ * Shows address summary, items list, estimated delivery, and Proceed to Payment button.
  */
-function ReviewStep({ address, items, onBack, onPlaceOrder, submitting, submitError }) {
+function ReviewStep({ address, items, total, onBack, onProceedToPayment, submitting, submitError }) {
+  const estimatedDelivery = new Date(Date.now() + 35 * 24 * 60 * 60 * 1000);
+  const deliveryStr = estimatedDelivery.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   return (
     <section className="space-y-6">
       {/* Shipping address summary */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Shipping Address</h2>
-          <button
-            type="button"
-            onClick={onBack}
-            className="text-sm text-brand-600 hover:underline"
-          >
+          <button type="button" onClick={onBack} className="text-sm text-brand-600 hover:underline">
             Edit
           </button>
         </div>
@@ -442,21 +478,13 @@ function ReviewStep({ address, items, onBack, onPlaceOrder, submitting, submitEr
             <li key={item.cartItemId} className="flex gap-4 py-3 first:pt-0 last:pb-0">
               <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                 {item.fabricSwatchUrl ? (
-                  <img
-                    src={item.fabricSwatchUrl}
-                    alt={item.fabricName}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={item.fabricSwatchUrl} alt={item.fabricName} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl">
-                    🧵
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center text-2xl">🧵</div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 text-sm">
-                  {item.fabricName || 'Custom Suit'}
-                </p>
+                <p className="font-medium text-gray-900 text-sm">{item.fabricName || 'Custom Suit'}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity}</p>
               </div>
               <p className="font-semibold text-gray-900 text-sm">
@@ -465,20 +493,23 @@ function ReviewStep({ address, items, onBack, onPlaceOrder, submitting, submitEr
             </li>
           ))}
         </ul>
+
+        {/* Estimated delivery */}
+        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 text-sm text-gray-600">
+          <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>Estimated delivery by <strong>{deliveryStr}</strong></span>
+        </div>
       </div>
 
-      {/* Place order */}
+      {/* Proceed to payment */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <p className="text-xs text-gray-500 mb-4">
           By placing your order you agree to our{' '}
-          <a href="/terms" className="underline hover:text-gray-900">
-            Terms &amp; Conditions
-          </a>{' '}
+          <a href="/terms" className="underline hover:text-gray-900">Terms &amp; Conditions</a>{' '}
           and{' '}
-          <a href="/privacy" className="underline hover:text-gray-900">
-            Privacy Policy
-          </a>
-          .
+          <a href="/privacy" className="underline hover:text-gray-900">Privacy Policy</a>.
         </p>
 
         {submitError && (
@@ -489,11 +520,11 @@ function ReviewStep({ address, items, onBack, onPlaceOrder, submitting, submitEr
 
         <button
           type="button"
-          onClick={onPlaceOrder}
+          onClick={onProceedToPayment}
           disabled={submitting}
           className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? 'Placing Order…' : 'Place Order'}
+          {submitting ? 'Preparing Payment…' : `Proceed to Payment — £${total.toFixed(2)}`}
         </button>
 
         <button
@@ -509,18 +540,121 @@ function ReviewStep({ address, items, onBack, onPlaceOrder, submitting, submitEr
 }
 
 /**
+ * Payment step — Step 3.
+ * Renders the Stripe Payment Element inside an Elements provider.
+ * Must be used as a child of <Elements> so useStripe/useElements hooks are available.
+ *
+ * @param {{ order: object, total: number, onBack: function, onSuccess: function }} props
+ */
+function PaymentStep({ order, total, onBack, onSuccess }) {
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState('');
+
+  /**
+   * Confirms the payment with Stripe.
+   * On success, calls onSuccess to navigate to the confirmation page.
+   */
+  async function handlePay(e) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setPayError('');
+    setPaying(true);
+
+    try {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        redirect: 'if_required',
+      });
+
+      if (error) {
+        // Show Stripe's decline message verbatim for card errors; generic message otherwise
+        if (error.type === 'card_error' || error.type === 'validation_error') {
+          setPayError(error.message || 'Your card was declined. Please try another payment method.');
+        } else {
+          setPayError('An unexpected payment error occurred. Please try again.');
+        }
+      } else {
+        // Payment succeeded — webhook will confirm the order asynchronously
+        onSuccess();
+      }
+    } catch (err) {
+      setPayError(err?.message || 'Payment failed. Please try again.');
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  return (
+    <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-6">Payment Details</h2>
+
+      <form onSubmit={handlePay} noValidate>
+        {/* Stripe Payment Element — renders card number, expiry, CVC securely */}
+        <PaymentElement
+          options={{
+            layout: 'tabs',
+          }}
+        />
+
+        {payError && (
+          <p role="alert" className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            {payError}
+          </p>
+        )}
+
+        <div className="mt-6 space-y-3">
+          <button
+            type="submit"
+            disabled={paying || !stripe}
+            className="w-full py-3 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {paying ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Processing…
+              </span>
+            ) : (
+              `Pay £${total.toFixed(2)}`
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          >
+            Back to Review
+          </button>
+        </div>
+
+        {/* Stripe trust badge */}
+        <p className="mt-4 text-xs text-center text-gray-400">
+          Secured by{' '}
+          <a
+            href="https://stripe.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium hover:underline"
+          >
+            Stripe
+          </a>
+        </p>
+      </form>
+    </section>
+  );
+}
+
+/**
  * Right-rail order summary card.
  */
-function OrderSummary({
-  items,
-  subtotal,
-  discount,
-  shipping,
-  tax,
-  total,
-  promoCode,
-  shippingRegion,
-}) {
+function OrderSummary({ items, subtotal, discount, shipping, tax, total, promoCode, shippingRegion }) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-base font-semibold text-gray-900 mb-4">
@@ -534,7 +668,7 @@ function OrderSummary({
         </div>
         <div className="flex justify-between text-gray-600">
           <span>Shipping ({shippingRegion === 'us' ? 'US' : 'International'})</span>
-          <span>${shipping}</span>
+          <span>£{shipping}</span>
         </div>
         {shippingRegion === 'us' && tax > 0 && (
           <div className="flex justify-between text-gray-600">
@@ -555,9 +689,8 @@ function OrderSummary({
         <span>£{total.toFixed(2)}</span>
       </div>
 
-      {/* Shipping rates note */}
       <p className="mt-4 text-xs text-gray-400">
-        Shipping: US ${SHIPPING_RATES.us} · International ${SHIPPING_RATES.international}
+        Shipping: US £{SHIPPING_RATES.us} · International £{SHIPPING_RATES.international}
       </p>
     </div>
   );

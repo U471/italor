@@ -2,6 +2,8 @@
 
 const { Router } = require('express');
 const { listFabrics, listFilterOptions, getFabric, listFabricReviews } = require('../controllers/fabric.controller');
+const { authenticate } = require('../middleware/auth.middleware');
+const { createReview, createReviewRules } = require('../controllers/review.controller');
 
 const router = Router();
 
@@ -16,5 +18,8 @@ router.get('/:id', getFabric);
 
 /** GET /api/v1/products/:id/reviews — paginated reviews for a fabric */
 router.get('/:id/reviews', listFabricReviews);
+
+/** POST /api/v1/products/:fabricId/reviews — submit a new review (auth required) */
+router.post('/:fabricId/reviews', authenticate, createReviewRules, createReview);
 
 module.exports = router;

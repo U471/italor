@@ -346,11 +346,44 @@ export async function getOrderDetail(orderId) {
  * Creates a review for a fabric (requires a completed order containing that fabric).
  *
  * @param {string} fabricId
- * @param {{ rating: number, title?: string, body?: string, fitRating?: number }} payload
- * @returns {Promise<{ review: object }>}
+ * @param {{ orderId: string, rating: number, title?: string, body?: string, fitRating?: number }} payload
+ * @returns {Promise<{ status: string, data: { review: object } }>}
  */
 export async function createReview(fabricId, payload) {
   const { data } = await api.post(`/api/v1/products/${fabricId}/reviews`, payload);
+  return data;
+}
+
+/**
+ * Returns paginated reviews written by the authenticated user.
+ *
+ * @param {{ page?: number, limit?: number }} params
+ * @returns {Promise<{ status: string, data: { reviews: object[], total: number, page: number, pages: number } }>}
+ */
+export async function getMyReviews(params) {
+  const { data } = await api.get('/api/v1/reviews/my', { params });
+  return data;
+}
+
+/**
+ * Marks a review as helpful. Each user may vote only once per review.
+ *
+ * @param {string} reviewId  MongoDB ObjectId
+ * @returns {Promise<{ status: string, data: { helpfulVotes: number } }>}
+ */
+export async function markReviewHelpful(reviewId) {
+  const { data } = await api.post(`/api/v1/reviews/${reviewId}/helpful`);
+  return data;
+}
+
+/**
+ * Deletes a review. Only the author or an admin may delete.
+ *
+ * @param {string} reviewId  MongoDB ObjectId
+ * @returns {Promise<{ status: string, message: string }>}
+ */
+export async function deleteReview(reviewId) {
+  const { data } = await api.delete(`/api/v1/reviews/${reviewId}`);
   return data;
 }
 

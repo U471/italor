@@ -15,6 +15,16 @@ const reviewSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    /**
+     * The order this review is tied to.
+     * Enforces one review per order item (unique compound index below).
+     */
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',
+      default: null,
+      index: true,
+    },
     displayName: {
       type: String,
       required: [true, 'Display name is required'],
@@ -49,6 +59,20 @@ const reviewSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    helpfulVotes: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    /**
+     * Array of user IDs who have already voted helpful on this review.
+     * Used to prevent duplicate votes per user.
+     */
+    helpfulVoters: {
+      type: [mongoose.Schema.Types.ObjectId],
+      default: [],
+      select: false,
+    },
   },
   {
     timestamps: true,
@@ -56,6 +80,12 @@ const reviewSchema = new mongoose.Schema(
 );
 
 reviewSchema.index({ fabric: 1, createdAt: -1 });
+
+/**
+ * One review per user per order — prevent duplicate reviews on the same order item.
+ * Sparse so that legacy reviews without an order field are not affected.
+ */
+reviewSchema.index({ user: 1, order: 1 }, { unique: true, sparse: true });
 
 const Review = mongoose.model('Review', reviewSchema);
 

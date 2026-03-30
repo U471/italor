@@ -22,6 +22,7 @@ const checkoutRouter = require('./routes/checkout.routes');
 const paymentRouter = require('./routes/payment.routes');
 const webhookRouter = require('./routes/webhook.routes');
 const orderRouter = require('./routes/order.routes');
+const reviewRouter = require('./routes/review.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFoundHandler } = require('./middleware/notFoundHandler');
 
@@ -94,6 +95,7 @@ app.use('/api/v1/promo', promoRouter);
 app.use('/api/v1/checkout', checkoutRouter);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/orders', orderRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 // ── 404 + Error handlers ─────────────────────────────────────────────────────
 app.use(notFoundHandler);

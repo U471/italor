@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { loginUser } from '../../services/api';
 import useAuthStore from '../../store/authStore';
 
@@ -34,7 +34,11 @@ function LoginForm({ onSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  // If ProtectedRoute redirected here, location.state.from contains the intended path.
+  const redirectTo = location.state?.from || '/dashboard';
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -82,7 +86,7 @@ function LoginForm({ onSuccess }) {
 
       if (onSuccess) onSuccess(result);
 
-      navigate('/dashboard');
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setApiError(err.message || 'Login failed. Please try again.');
     } finally {

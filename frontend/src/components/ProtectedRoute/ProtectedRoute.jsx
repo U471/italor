@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 
 /**
@@ -15,6 +15,7 @@ import useAuthStore from '../../store/authStore';
  */
 function ProtectedRoute({ children, isLoading = false }) {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const location = useLocation();
 
   // Show nothing while checking auth to prevent flash
   if (isLoading) {
@@ -48,7 +49,8 @@ function ProtectedRoute({ children, isLoading = false }) {
   }
 
   if (!accessToken) {
-    return <Navigate to="/login" replace />;
+    // Pass the attempted path in router state so LoginForm can redirect back after login.
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return children;

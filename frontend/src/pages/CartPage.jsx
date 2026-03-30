@@ -202,13 +202,12 @@ function CartPage() {
               <span>£{orderTotal.toFixed(2)}</span>
             </div>
 
-            <button
-              type="button"
-              disabled
-              className="w-full mt-4 py-3 bg-brand-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            <Link
+              to="/checkout"
+              className="block w-full mt-4 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors text-center"
             >
               Proceed to Checkout
-            </button>
+            </Link>
 
             <Link
               to="/fabrics"

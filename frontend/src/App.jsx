@@ -19,6 +19,8 @@ import OrderDetailPage from './pages/OrderDetailPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage';
+import WriteReviewPage from './pages/WriteReviewPage';
+import MyReviewsPage from './pages/MyReviewsPage';
 import FeaturedFabrics from './components/FeaturedFabrics/FeaturedFabrics';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute/AdminRoute';
@@ -96,10 +98,15 @@ function App() {
           path="/account/orders/:orderId/review"
           element={
             <ProtectedRoute isLoading={isLoading}>
-              {/* Review page — implemented in SCRUM-44 */}
-              <div className="max-w-lg mx-auto px-4 py-16 text-center">
-                <p className="text-gray-500">Review form coming soon.</p>
-              </div>
+              <WriteReviewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/reviews"
+          element={
+            <ProtectedRoute isLoading={isLoading}>
+              <MyReviewsPage />
             </ProtectedRoute>
           }
         />
